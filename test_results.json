@@ -1,0 +1,590 @@
+{
+  "meta": {
+    "generated_at": "2026-05-02T19:37:21.607Z",
+    "tool_versions": {
+      "lighthouse": "12.x",
+      "playwright": "1.x"
+    },
+    "methodology": "mobile-simulated (Lighthouse primary, Playwright fallback)",
+    "runs_per_site": 1,
+    "outlier_method": "IQR",
+    "sites_audited": 8,
+    "note": "Lighthouse reports saved to .lighthouse-temp/ directory as JSON files"
+  },
+  "results": [
+    {
+      "name": "First National Bank BW",
+      "url": "https://www.fnbbotswana.co.bw",
+      "industry": "banking",
+      "audited_at": "2026-05-02T19:32:30.999Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 7.32,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 8.18,
+        "loadComplete": 0,
+        "ttfb": 3.03,
+        "performanceScore": 80
+      },
+      "performance": {
+        "fcp": 7.32,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 8.18,
+        "loadComplete": 0,
+        "ttfb": 3.03,
+        "performanceScore": 80
+      },
+      "network": {
+        "totalSizeKB": 5034.8,
+        "totalRequests": 79,
+        "thirdPartyRequests": 12,
+        "thirdPartyRatio": 0.152,
+        "byCategory": {
+          "other": {
+            "count": 16,
+            "sizeKB": 232.7
+          },
+          "css": {
+            "count": 12,
+            "sizeKB": 1795.8
+          },
+          "js": {
+            "count": 27,
+            "sizeKB": 2050.4
+          },
+          "image": {
+            "count": 18,
+            "sizeKB": 784.7
+          },
+          "font": {
+            "count": 6,
+            "sizeKB": 171.2
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://www.fnbbotswana.co.bw/_assets/css/v3.33.0/00/skin.css",
+          "category": "css",
+          "sizeKB": 1546.9
+        },
+        {
+          "url": "https://www.fnbbotswana.co.bw/_assets/images/generic/skins/00/misc/loader.gif...",
+          "category": "image",
+          "sizeKB": 562.6
+        },
+        {
+          "url": "https://www.fnbbotswana.co.bw/",
+          "category": "other",
+          "sizeKB": 223.1
+        },
+        {
+          "url": "https://www.fnbbotswana.co.bw/_assets/js/v3.33.0/main_min.js",
+          "category": "js",
+          "sizeKB": 207
+        },
+        {
+          "url": "https://www.fnbbotswana.co.bw/_assets/js/libs/highcharts.js",
+          "category": "js",
+          "sizeKB": 189.1
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Standard Chartered BW",
+      "url": "https://www.sc.com/bw",
+      "industry": "banking",
+      "audited_at": "2026-05-02T19:32:54.458Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": null,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 1.31,
+        "loadComplete": 0,
+        "ttfb": 0.15,
+        "performanceScore": 100
+      },
+      "performance": {
+        "fcp": null,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 1.31,
+        "loadComplete": 0,
+        "ttfb": 0.15,
+        "performanceScore": 100
+      },
+      "network": {
+        "totalSizeKB": 1994.7,
+        "totalRequests": 78,
+        "thirdPartyRequests": 17,
+        "thirdPartyRatio": 0.218,
+        "byCategory": {
+          "other": {
+            "count": 17,
+            "sizeKB": 76.3
+          },
+          "css": {
+            "count": 3,
+            "sizeKB": 39.9
+          },
+          "js": {
+            "count": 21,
+            "sizeKB": 806.6
+          },
+          "image": {
+            "count": 33,
+            "sizeKB": 965.4
+          },
+          "font": {
+            "count": 4,
+            "sizeKB": 106.5
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://av.sc.com/bw/content/images/bh-market-view-mobile.jpg",
+          "category": "image",
+          "sizeKB": 295.4
+        },
+        {
+          "url": "https://www.sc.com/hold-to-auouse-vs-Sconcena-Seruice-Sey-haue-to-m",
+          "category": "js",
+          "sizeKB": 241.2
+        },
+        {
+          "url": "https://connect.facebook.net/signals/config/435131290895873?v=2.9.313&r=stabl...",
+          "category": "js",
+          "sizeKB": 112.2
+        },
+        {
+          "url": "https://av.sc.com/bw/content/images/bw-collateral-fraud-masthead-1600x-490y.jpg",
+          "category": "image",
+          "sizeKB": 102.9
+        },
+        {
+          "url": "https://av.sc.com/assets/global/adobe/production/7b4b60abf672/4c1243292ba5/la...",
+          "category": "js",
+          "sizeKB": 97.8
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Mascom Wireless",
+      "url": "https://www.mascom.bw",
+      "industry": "telecom",
+      "audited_at": "2026-05-02T19:33:45.625Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 10.12,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 13.2,
+        "loadComplete": 0,
+        "ttfb": 5.64,
+        "performanceScore": 80
+      },
+      "performance": {
+        "fcp": 10.12,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 13.2,
+        "loadComplete": 0,
+        "ttfb": 5.64,
+        "performanceScore": 80
+      },
+      "network": {
+        "totalSizeKB": 6751.7,
+        "totalRequests": 125,
+        "thirdPartyRequests": 19,
+        "thirdPartyRatio": 0.152,
+        "byCategory": {
+          "other": {
+            "count": 5,
+            "sizeKB": 223.7
+          },
+          "css": {
+            "count": 46,
+            "sizeKB": 2721.5
+          },
+          "js": {
+            "count": 44,
+            "sizeKB": 1609.9
+          },
+          "image": {
+            "count": 25,
+            "sizeKB": 1897.5
+          },
+          "font": {
+            "count": 5,
+            "sizeKB": 299
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://mascom.bw/wp-content/themes/mascom_new/assets/css/layouts/layout_1/ma...",
+          "category": "css",
+          "sizeKB": 558.4
+        },
+        {
+          "url": "https://mascom.bw/wp-content/plugins/js_composer/assets/css/js_composer.min.c...",
+          "category": "css",
+          "sizeKB": 455.4
+        },
+        {
+          "url": "https://mascom.bw/wp-content/plugins/revslider/sr6/assets/js/rs6.min.js?ver=6...",
+          "category": "js",
+          "sizeKB": 406.2
+        },
+        {
+          "url": "https://mascom.bw/wp-content/uploads/2026/03/Unlimited-Streaming_banner.jpg",
+          "category": "image",
+          "sizeKB": 330.6
+        },
+        {
+          "url": "https://mascom.bw/wp-content/plugins/apex-notification-bar-lite/css/frontend/...",
+          "category": "css",
+          "sizeKB": 323
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Orange Botswana",
+      "url": "https://www.orange.co.bw",
+      "industry": "telecom",
+      "audited_at": "2026-05-02T19:34:22.127Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 1.85,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 3.29,
+        "loadComplete": 0,
+        "ttfb": 0.11,
+        "performanceScore": 90
+      },
+      "performance": {
+        "fcp": 1.85,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 3.29,
+        "loadComplete": 0,
+        "ttfb": 0.11,
+        "performanceScore": 90
+      },
+      "network": {
+        "totalSizeKB": 10764.3,
+        "totalRequests": 72,
+        "thirdPartyRequests": 6,
+        "thirdPartyRatio": 0.083,
+        "byCategory": {
+          "other": {
+            "count": 2,
+            "sizeKB": 152.4
+          },
+          "css": {
+            "count": 7,
+            "sizeKB": 1866.3
+          },
+          "image": {
+            "count": 33,
+            "sizeKB": 1448.3
+          },
+          "js": {
+            "count": 28,
+            "sizeKB": 7223
+          },
+          "font": {
+            "count": 2,
+            "sizeKB": 74.2
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://www.orange.co.bw/personal/resources/js/vendors-7-42.js",
+          "category": "js",
+          "sizeKB": 1830
+        },
+        {
+          "url": "https://www.orange.co.bw/personal/resources/js/bundle-7-45.js?rand=1774000581...",
+          "category": "js",
+          "sizeKB": 1378
+        },
+        {
+          "url": "https://www.orange.co.bw/personal/resources/js/bundle-7-42.js?rand=1765532898...",
+          "category": "js",
+          "sizeKB": 1354.8
+        },
+        {
+          "url": "https://www.orange.co.bw/personal/resources/css/style-large-7-45.css?rand=177...",
+          "category": "css",
+          "sizeKB": 720.3
+        },
+        {
+          "url": "https://www.orange.co.bw/personal/resources/css/style-large-7-42.css?rand=176...",
+          "category": "css",
+          "sizeKB": 711.5
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Botswana Power Corporation",
+      "url": "https://www.bpc.bw",
+      "industry": "utility",
+      "audited_at": "2026-05-02T19:35:14.062Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 2.21,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 3.29,
+        "loadComplete": 0,
+        "ttfb": 0.25,
+        "performanceScore": 90
+      },
+      "performance": {
+        "fcp": 2.21,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 3.29,
+        "loadComplete": 0,
+        "ttfb": 0.25,
+        "performanceScore": 90
+      },
+      "network": {
+        "totalSizeKB": 8990.5,
+        "totalRequests": 122,
+        "thirdPartyRequests": 37,
+        "thirdPartyRatio": 0.303,
+        "byCategory": {
+          "css": {
+            "count": 21,
+            "sizeKB": 1188.5
+          },
+          "other": {
+            "count": 19,
+            "sizeKB": 607.5
+          },
+          "js": {
+            "count": 24,
+            "sizeKB": 3824.7
+          },
+          "font": {
+            "count": 13,
+            "sizeKB": 933.9
+          },
+          "image": {
+            "count": 45,
+            "sizeKB": 2435.9
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://www.bpc.bw/wp-content/uploads/fusion-styles/691f909423cd1b51f43aa906c...",
+          "category": "css",
+          "sizeKB": 1122.4
+        },
+        {
+          "url": "https://oc-cdn-public-eur.azureedge.net/livechatwidget/v2scripts/ocw.js",
+          "category": "js",
+          "sizeKB": 838.3
+        },
+        {
+          "url": "https://oc-cdn-public-eur.azureedge.net/livechatwidget/v2scripts/webchat.js",
+          "category": "js",
+          "sizeKB": 749.9
+        },
+        {
+          "url": "https://www.bpc.bw/wp-content/uploads/fusion-scripts/66504ebe6d805ea83cac503a...",
+          "category": "js",
+          "sizeKB": 714.1
+        },
+        {
+          "url": "https://oc-cdn-public-eur.azureedge.net/livechatwidget/v2scripts/callingsdk/1...",
+          "category": "js",
+          "sizeKB": 634.8
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Choppies",
+      "url": "https://www.choppies.co.bw",
+      "industry": "retail",
+      "audited_at": "2026-05-02T19:36:53.903Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 5.09,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 24.75,
+        "loadComplete": 0,
+        "ttfb": 3.28,
+        "performanceScore": 80
+      },
+      "performance": {
+        "fcp": 5.09,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 24.75,
+        "loadComplete": 0,
+        "ttfb": 3.28,
+        "performanceScore": 80
+      },
+      "network": {
+        "totalSizeKB": 24607.9,
+        "totalRequests": 99,
+        "thirdPartyRequests": 6,
+        "thirdPartyRatio": 0.061,
+        "byCategory": {
+          "other": {
+            "count": 5,
+            "sizeKB": 155.1
+          },
+          "css": {
+            "count": 42,
+            "sizeKB": 610.4
+          },
+          "js": {
+            "count": 25,
+            "sizeKB": 1204.3
+          },
+          "image": {
+            "count": 22,
+            "sizeKB": 22336.4
+          },
+          "font": {
+            "count": 5,
+            "sizeKB": 301.6
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://choppies.co.bw/wp-content/uploads/2022/07/row-banner5-1.png",
+          "category": "image",
+          "sizeKB": 2521.8
+        },
+        {
+          "url": "https://choppies.co.bw/wp-content/uploads/2026/03/ChatGPT-Image-Mar-13-2026-1...",
+          "category": "image",
+          "sizeKB": 2456.5
+        },
+        {
+          "url": "https://choppies.co.bw/wp-content/uploads/2026/03/ChatGPT-Image-Mar-13-2026-1...",
+          "category": "image",
+          "sizeKB": 2453.1
+        },
+        {
+          "url": "https://choppies.co.bw/wp-content/uploads/2026/04/Choppies-Mothers-Day-V2.png",
+          "category": "image",
+          "sizeKB": 2448.8
+        },
+        {
+          "url": "https://choppies.co.bw/wp-content/uploads/2026/03/ChatGPT-Image-Mar-13-2026-1...",
+          "category": "image",
+          "sizeKB": 2416.6
+        }
+      ],
+      "lighthouse_reports": []
+    },
+    {
+      "name": "Daily News BW",
+      "url": "https://www.dailynews.gov.bw",
+      "industry": "media",
+      "audited_at": "2026-05-02T19:37:21.606Z",
+      "runs_completed": 1,
+      "lighthouse": null,
+      "playwright": {
+        "fcp": 8.3,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 11.83,
+        "loadComplete": 0,
+        "ttfb": 5.95,
+        "performanceScore": 80
+      },
+      "performance": {
+        "fcp": 8.3,
+        "lcp": null,
+        "cls": 0,
+        "domContentLoaded": 11.83,
+        "loadComplete": 0,
+        "ttfb": 5.95,
+        "performanceScore": 80
+      },
+      "network": {
+        "totalSizeKB": 10439.3,
+        "totalRequests": 73,
+        "thirdPartyRequests": 19,
+        "thirdPartyRatio": 0.26,
+        "byCategory": {
+          "other": {
+            "count": 5,
+            "sizeKB": 77.7
+          },
+          "css": {
+            "count": 19,
+            "sizeKB": 345.4
+          },
+          "image": {
+            "count": 25,
+            "sizeKB": 9222
+          },
+          "js": {
+            "count": 20,
+            "sizeKB": 667
+          },
+          "font": {
+            "count": 4,
+            "sizeKB": 127.3
+          }
+        }
+      },
+      "largest_resources": [
+        {
+          "url": "https://dailynews.gov.bw/common_up/dailynews/2-5-2026-debswana-world-athletic...",
+          "category": "image",
+          "sizeKB": 1621.8
+        },
+        {
+          "url": "https://dailynews.gov.bw/common_up/dailynews/30-04-2026_president-receives-fo...",
+          "category": "image",
+          "sizeKB": 1062.9
+        },
+        {
+          "url": "https://dailynews.gov.bw/common_up/dailynews/29-04-2026_kgari-o-kopa-bakwena-...",
+          "category": "image",
+          "sizeKB": 999.3
+        },
+        {
+          "url": "https://dailynews.gov.bw/assets/images/loading.gif",
+          "category": "image",
+          "sizeKB": 898
+        },
+        {
+          "url": "https://dailynews.gov.bw/common_up/dailynews/29-04-2026_puso-e-tsweletse-ka-g...",
+          "category": "image",
+          "sizeKB": 757
+        }
+      ],
+      "lighthouse_reports": []
+    }
+  ]
+}

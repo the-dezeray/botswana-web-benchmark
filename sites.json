@@ -1,0 +1,42 @@
+[
+  {
+    "name": "First National Bank BW",
+    "url": "https://www.fnbbotswana.co.bw",
+    "industry": "banking"
+  },
+  {
+    "name": "Standard Chartered BW",
+    "url": "https://www.sc.com/bw",
+    "industry": "banking"
+  },
+  {
+    "name": "Mascom Wireless",
+    "url": "https://www.mascom.bw",
+    "industry": "telecom"
+  },
+  {
+    "name": "Orange Botswana",
+    "url": "https://www.orange.co.bw",
+    "industry": "telecom"
+  },
+  {
+    "name": "Botswana Power Corporation",
+    "url": "https://www.bpc.bw",
+    "industry": "utility"
+  },
+  {
+    "name": "Choppies",
+    "url": "https://www.choppies.co.bw",
+    "industry": "retail"
+  },
+  {
+    "name": "Daily News BW",
+    "url": "https://www.dailynews.gov.bw",
+    "industry": "media"
+  },
+  {
+    "name": "University of Botswana",
+    "url": "https://www.ub.bw",
+    "industry": "education"
+  }
+]
