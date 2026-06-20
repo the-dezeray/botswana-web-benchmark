@@ -219,7 +219,6 @@
           `--user-data-dir=${tmpDir}`,
         ],
         // Prevent chrome-launcher from trying to clean up temp dirs (causes EPERM on Windows)
-        ignoreDefaultFlags: true,
       });
 
       let result = null;
