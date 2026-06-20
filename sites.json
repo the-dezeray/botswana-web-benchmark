@@ -1,13 +1,23 @@
 [
   {
+    "name": "Debswana Diamond Company",
+    "url": "https://www.debswana.com",
+    "industry": "mining"
+  },
+  {
     "name": "First National Bank BW",
     "url": "https://www.fnbbotswana.co.bw",
     "industry": "banking"
   },
   {
-    "name": "Standard Chartered BW",
-    "url": "https://www.sc.com/bw",
+    "name": "Absa Bank Botswana",
+    "url": "https://www.absa.co.bw",
     "industry": "banking"
+  },
+  {
+    "name": "BTC Botswana",
+    "url": "https://www.btc.bw",
+    "industry": "telecom"
   },
   {
     "name": "Mascom Wireless",
@@ -20,9 +30,14 @@
     "industry": "telecom"
   },
   {
-    "name": "Botswana Power Corporation",
-    "url": "https://www.bpc.bw",
-    "industry": "utility"
+    "name": "BIHL",
+    "url": "https://www.bihl.co.bw",
+    "industry": "finance"
+  },
+  {
+    "name": "Sefalana",
+    "url": "https://www.sefalana.com",
+    "industry": "retail"
   },
   {
     "name": "Choppies",
@@ -30,13 +45,263 @@
     "industry": "retail"
   },
   {
-    "name": "Daily News BW",
-    "url": "https://www.dailynews.gov.bw",
-    "industry": "media"
+    "name": "Botswana Power Corporation",
+    "url": "https://www.bpc.bw",
+    "industry": "utility"
+  },
+  {
+    "name": "Letshego",
+    "url": "https://www.letshego.com",
+    "industry": "finance"
+  },
+  {
+    "name": "Standard Chartered BW",
+    "url": "https://www.sc.com/bw",
+    "industry": "banking"
+  },
+  {
+    "name": "Lucara Botswana",
+    "url": "https://www.lucaradiamond.com",
+    "industry": "mining"
+  },
+  {
+    "name": "Okavango Diamond Company",
+    "url": "https://www.odc.co.bw",
+    "industry": "mining"
+  },
+  {
+    "name": "BDC Botswana",
+    "url": "https://www.bdc.bw",
+    "industry": "investment"
+  },
+  {
+    "name": "Sechaba Brewery Holdings",
+    "url": "https://www.sechaba.com",
+    "industry": "beverages"
+  },
+  {
+    "name": "Wilderness Safaris",
+    "url": "https://www.wildernessdestinations.com",
+    "industry": "tourism"
+  },
+  {
+    "name": "Turnstar Holdings",
+    "url": "https://www.turnstar.co.bw",
+    "industry": "real-estate"
+  },
+  {
+    "name": "Primetime Property Holdings",
+    "url": "https://www.primetime.co.bw",
+    "industry": "real-estate"
+  },
+  {
+    "name": "BotswanaPost",
+    "url": "https://www.botspost.co.bw",
+    "industry": "logistics"
+  },
+  {
+    "name": "BCL Limited",
+    "url": "https://www.bcl.bw",
+    "industry": "mining"
+  },
+  {
+    "name": "Botswana Ash (Botash)",
+    "url": "https://www.botash.bw",
+    "industry": "mining"
+  },
+  {
+    "name": "Nedbank Botswana",
+    "url": "https://www.nedbank.co.bw",
+    "industry": "banking"
+  },
+  {
+    "name": "Stanbic Bank Botswana",
+    "url": "https://www.stanbicbank.co.bw",
+    "industry": "banking"
+  },
+  {
+    "name": "BBS Bank",
+    "url": "https://www.bbsbank.co.bw",
+    "industry": "banking"
+  },
+  {
+    "name": "Bayport Botswana",
+    "url": "https://www.bayportbotswana.com",
+    "industry": "finance"
+  },
+  {
+    "name": "Minet Botswana",
+    "url": "https://www.minet.com/botswana",
+    "industry": "finance"
+  },
+  {
+    "name": "Bomaid",
+    "url": "https://www.bomaid.co.bw",
+    "industry": "healthcare"
+  },
+  {
+    "name": "Pula Medical Aid Fund",
+    "url": "https://www.pulamed.co.bw",
+    "industry": "healthcare"
+  },
+  {
+    "name": "Water Utilities Corporation",
+    "url": "https://www.wuc.bw",
+    "industry": "utility"
+  },
+  {
+    "name": "Air Botswana",
+    "url": "https://www.airbotswana.co.bw",
+    "industry": "logistics"
+  },
+  {
+    "name": "CA Sales Holdings",
+    "url": "https://www.casales.com",
+    "industry": "retail"
+  },
+  {
+    "name": "Fours Cash & Carry",
+    "url": "https://www.fours.co.bw",
+    "industry": "retail"
+  },
+  {
+    "name": "Builders Mart Botswana",
+    "url": "https://www.builders.co.bw",
+    "industry": "retail"
+  },
+  {
+    "name": "Botswana Life Insurance",
+    "url": "https://www.botswanalife.co.bw",
+    "industry": "finance"
+  },
+  {
+    "name": "MVA Fund Botswana",
+    "url": "https://www.mvafund.co.bw",
+    "industry": "finance"
+  },
+  {
+    "name": "Khoemacau Copper Mining",
+    "url": "https://www.khoemacaumining.com",
+    "industry": "mining"
+  },
+  {
+    "name": "BIUST",
+    "url": "https://www.biust.ac.bw",
+    "industry": "education"
   },
   {
     "name": "University of Botswana",
     "url": "https://www.ub.bw",
     "industry": "education"
+  },
+  {
+    "name": "Botho University",
+    "url": "https://www.botho.edu.bw",
+    "industry": "education"
+  },
+  {
+    "name": "Botswana Accountancy College",
+    "url": "https://www.bac.ac.bw",
+    "industry": "education"
+  },
+  {
+    "name": "Limkokwing University Botswana",
+    "url": "https://www.limkokwing.net/botswana",
+    "industry": "education"
+  },
+  {
+    "name": "BA ISAGO University",
+    "url": "https://www.baisago.ac.bw",
+    "industry": "education"
+  },
+  {
+    "name": "Bank of Botswana",
+    "url": "https://www.bankofbotswana.bw",
+    "industry": "finance"
+  },
+  {
+    "name": "BURS",
+    "url": "https://www.burs.org.bw",
+    "industry": "government"
+  },
+  {
+    "name": "NBFIRA",
+    "url": "https://www.nbfira.org.bw",
+    "industry": "government"
+  },
+  {
+    "name": "BOCRA",
+    "url": "https://www.bocra.org.bw",
+    "industry": "government"
+  },
+  {
+    "name": "CEDA",
+    "url": "https://www.ceda.co.bw",
+    "industry": "finance"
+  },
+  {
+    "name": "LEA Botswana",
+    "url": "https://www.lea.co.bw",
+    "industry": "government"
+  },
+  {
+    "name": "BITC",
+    "url": "https://www.bitc.co.bw",
+    "industry": "government"
+  },
+  {
+    "name": "Statistics Botswana",
+    "url": "https://www.statsbots.org.bw",
+    "industry": "government"
+  },
+  {
+    "name": "Botswana Innovation Hub",
+    "url": "https://www.bih.co.bw",
+    "industry": "technology"
+  },
+  {
+    "name": "iBranch Botswana",
+    "url": "https://www.ibranch.co.bw",
+    "industry": "technology"
+  },
+  {
+    "name": "AppLab Botswana",
+    "url": "https://www.applab.co.bw",
+    "industry": "technology"
+  },
+  {
+    "name": "YFM Botswana",
+    "url": "https://www.yfm.co.bw",
+    "industry": "media"
+  },
+  {
+    "name": "Duma FM",
+    "url": "https://www.duma.fm",
+    "industry": "media"
+  },
+  {
+    "name": "Mmegi Online",
+    "url": "https://www.mmegi.bw",
+    "industry": "media"
+  },
+  {
+    "name": "Botswana Guardian",
+    "url": "https://www.botswanaguardian.co.bw",
+    "industry": "media"
+  },
+  {
+    "name": "Bokamoso Private Hospital",
+    "url": "https://www.bokamosohospital.com",
+    "industry": "healthcare"
+  },
+  {
+    "name": "Sidilega Private Hospital",
+    "url": "https://www.sidilegaprivatehospital.co.bw",
+    "industry": "healthcare"
+  },
+  {
+    "name": "Daily News BW",
+    "url": "https://www.dailynews.gov.bw",
+    "industry": "media"
   }
 ]

@@ -22,7 +22,7 @@ body {
 }
 
 .dash {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
@@ -34,12 +34,11 @@ body {
 }
 
 .minimal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 2rem;
   margin-bottom: 1.5rem;
+  align-items: start;
 }
 
 .header-brand {
@@ -89,6 +88,12 @@ body {
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
   border: 1px solid var(--color-border);
+}
+
+.header-stats-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .stat {
@@ -236,8 +241,8 @@ body {
 }
 
 .half {
-  flex: 0 1 auto;
-  min-width: 350px;
+  flex: 1;
+  min-width: 450px;
   border-bottom: none !important;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
@@ -249,8 +254,8 @@ body {
 }
 
 .chart-container {
-  width: auto;
-  display: inline-block;
+  width: 100%;
+  display: block;
   background: var(--color-bg);
   border-radius: 12px;
   padding: 1rem;
@@ -461,6 +466,15 @@ body {
   color: var(--color-text) !important;
 }
 
+/* Bar pattern effects */
+.recharts-bar-rectangle {
+  filter: url(#roughPaper);
+}
+
+.bar-with-pattern {
+  opacity: 0.95;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .dash {
@@ -469,6 +483,15 @@ body {
   
   .title {
     font-size: 1.75rem;
+  }
+  
+  .minimal-header {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .header-stats-wrapper {
+    width: 100%;
   }
   
   .header-stats {
@@ -570,4 +593,41 @@ body {
   color: var(--color-accent);
   flex-shrink: 0;
   margin-top: 0.25rem;
+}
+
+/* Next Audit Timer - Aligned with Header Stats */
+.next-audit-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #4ade80;
+  border-radius: 12px;
+  padding: 0.5rem 1.25rem;
+  box-shadow: 0 2px 4px rgba(74, 222, 128, 0.15);
+}
+
+.timer-countdown {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.time-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #15803d;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+@media (max-width: 768px) {
+  .next-audit-timer {
+    padding: 0.4rem 0.8rem;
+    gap: 0.4rem;
+  }
+  
+  .time-value {
+    font-size: 0.7rem;
+  }
 }

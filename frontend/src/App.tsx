@@ -4,12 +4,16 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, 
   PieChart, Pie, CartesianGrid, AreaChart, Area, LineChart,
   ScatterChart, Scatter, ZAxis, Legend, RadarChart, Radar, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis
+  PolarAngleAxis, PolarRadiusAxis, LabelList
 } from 'recharts'
 import { 
   TrendingUp, TrendingDown, Zap, Globe, Package, Clock, 
   BarChart3, Filter, Eye, Layers, Activity, AlertCircle
 } from 'lucide-react'
+import { Circles, Watch } from 'react-loader-spinner'
+import { NextAuditTimer } from './NextAuditTimer'
+import { AnimatedNumber } from './components/core/animated-number'
+import { TextScramble } from './components/core/text-scramble'
 
 interface LighthouseMetrics {
   performanceScore: number
@@ -79,7 +83,17 @@ const INDUSTRY_COLORS: Record<string, string> = {
   utility: '#10b981',
   retail: '#f59e0b',
   media: '#ef4444',
-  education: '#14b8a6'
+  education: '#14b8a6',
+  mining: '#4b5563',
+  finance: '#0ea5e9',
+  investment: '#6366f1',
+  beverages: '#f43f5e',
+  tourism: '#22c55e',
+  'real-estate': '#d946ef',
+  logistics: '#f97316',
+  healthcare: '#f43f5e',
+  government: '#64748b',
+  technology: '#06b6d4'
 }
 
 function App() {
@@ -143,7 +157,10 @@ function App() {
 
   const correlationData = useMemo(() =>
     filteredResults.map(site => ({
-      name: site.name.substring(0, 3),
+      name: site.name.replace('First National Bank BW', 'FNB BW')
+        .replace('Botswana Power Corporation', 'BPC')
+        .replace('Standard Chartered BW', 'StanChart BW')
+        .replace('University of Botswana', 'UB'),
       score: site.lighthouse.performanceScore,
       lcp: site.lighthouse.lcp,
       size: site.network.totalSizeKB / 1024,
@@ -218,53 +235,112 @@ function App() {
     return INDUSTRY_COLORS[industry] || COLORS.gray
   }
 
-  if (loading) return <div className="loading">Loading performance data...</div>
+  if (loading) return (
+    <div className="loading">
+      <Circles 
+        height="80" 
+        width="80" 
+        color="#3b82f6" 
+        ariaLabel="circles-loading" 
+        wrapperStyle={{}} 
+        wrapperClass="" 
+        visible={true} 
+      />
+      <p style={{ marginTop: '1rem', color: '#64748b' }}>Loading performance data...</p>
+    </div>
+  )
   if (error) return <div className="error">Error loading data: {error}</div>
   if (!data) return <div className="error">No data available</div>
 
   return (
     <div className="dash">
+      {/* SVG Pattern Definitions */}
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <pattern id="pattern-dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.15)" />
+          </pattern>
+          <pattern id="pattern-lines" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <path d="M0,8 l8,-8 M-2,2 l4,-4 M6,10 l4,-4" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+          </pattern>
+          <pattern id="pattern-diagonal" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect x="0" y="0" width="5" height="10" fill="rgba(0,0,0,0.1)" />
+          </pattern>
+          <pattern id="pattern-cross" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M0,5 L10,5 M5,0 L5,10" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
+          </pattern>
+          <pattern id="pattern-grid" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="10" height="10" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+      </svg>
+      
       <header className="dash-header">
         <div className="minimal-header">
           <div className="header-brand">
             <img src="/botswana-flag.png" alt="Botswana Flag" className="flag-icon" />
             <div className="brand-text">
-              <h1 className="title">Botswana Web Performance</h1>
-              <p className="tagline">Real-time insights into local web performance</p>
-            </div>
-          </div>
-          <div className="header-stats">
-            <div className="stat">
-              <Globe className="stat-icon" size={20} />
-              <div className="stat-content">
-                <span className="stat-value">{data.meta.sites_audited}</span>
-                <span className="stat-label">Sites</span>
-              </div>
-            </div>
-            <div className="stat">
-              <Zap className="stat-icon" size={20} />
-              <div className="stat-content">
-                <span className="stat-value">
-                  {Math.round(Object.values(data.summary.industry_avg_score).reduce((a, b) => a + b, 0) / Object.keys(data.summary.industry_avg_score).length)}
-                </span>
-                <span className="stat-label">Avg Score</span>
-              </div>
-            </div>
-            <div className="stat">
-              <TrendingUp className="stat-icon" size={20} />
-              <div className="stat-content">
-                <span className="stat-value">{data.summary.fastest_site.substring(0, 8)}...</span>
-                <span className="stat-label">Fastest</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
+              <h1 className="title">
+                <TextScramble className="font-bold" duration={2000}>
+                  Botswana Web Performance
+                </TextScramble>
+              </h1>
+              <p className="tagline">
+                <TextScramble duration={1500} speed={30}>
+                  Real-time insights into local web performance
+                </TextScramble>
+              </p>
+            
         <p className="subtitle">
           {new Date(data.meta.generated_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} · 
           {data.meta.methodology.replace('-', ' ')} · 
           {data.meta.runs_per_site} run{data.meta.runs_per_site > 1 ? 's' : ''} per site
         </p>
+            </div>
+            
+          </div>
+          <div className="header-stats-wrapper">
+            <div className="header-stats">
+              <div className="stat">
+                <Globe className="stat-icon" size={20} />
+                <div className="stat-content">
+                  <span className="stat-value">
+                    <AnimatedNumber 
+                      value={data.meta.sites_audited} 
+                      springOptions={{ bounce: 0, duration: 2000 }}
+                    />
+                  </span>
+                  <span className="stat-label">Sites</span>
+                </div>
+              </div>
+              <div className="stat">
+                <Zap className="stat-icon" size={20} />
+                <div className="stat-content">
+                  <span className="stat-value">
+                    <AnimatedNumber 
+                      value={Math.round(Object.values(data.summary.industry_avg_score).reduce((a, b) => a + b, 0) / Object.keys(data.summary.industry_avg_score).length)}
+                      springOptions={{ bounce: 0, duration: 2000 }}
+                    />
+                  </span>
+                  <span className="stat-label">Avg Score</span>
+                </div>
+              </div>
+              <div className="stat">
+                <TrendingUp className="stat-icon" size={20} />
+                <div className="stat-content">
+                  <span className="stat-value">
+                    <TextScramble duration={1800} speed={40}>
+                      {data.summary.fastest_site.substring(0, 8)}...
+                    </TextScramble>
+                  </span>
+                  <span className="stat-label">Fastest</span>
+                </div>
+              </div>
+            </div>
+            <NextAuditTimer />
+          </div>
+        </div>
+       
 
         <div className="controls">
           <div className="filter-group">
@@ -318,12 +394,13 @@ function App() {
               <h2 className="section-label">Performance Score by Site</h2>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width={700} height={300}>
-                <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 30, left:0 , bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" horizontal={false} />
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left:0 , bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                   <XAxis 
                     type="number"
                     domain={[0, 100]}
+                    ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                     tick={{ fontSize: 11, fill: '#64748b' }}
                   />
                   <YAxis 
@@ -347,6 +424,7 @@ function App() {
                     name="Performance Score"
                     radius={[0, 8, 8, 0]}
                     barSize={18}
+                    label={{ position: 'right', fill: '#1e293b', fontSize: 12, fontWeight: 600 }}
                   >
                     {performanceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />
@@ -363,12 +441,13 @@ function App() {
               <h2 className="section-label">Industry Performance Comparison</h2>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width={700} height={220}>
-                <BarChart data={industryData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" horizontal={false} />
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={industryData} layout="vertical" margin={{ top: 5, right: 50, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                   <XAxis 
                     type="number"
                     domain={[0, 100]}
+                    ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                     tick={{ fontSize: 11, fill: '#64748b' }}
                   />
                   <YAxis 
@@ -387,7 +466,12 @@ function App() {
                     }}
                     formatter={(value: any) => [Math.round(value), 'Avg Score']}
                   />
-                  <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={18}>
+                  <Bar 
+                    dataKey="score" 
+                    radius={[0, 8, 8, 0]} 
+                    barSize={18}
+                    label={{ position: 'right', fill: '#1e293b', fontSize: 12, fontWeight: 600 }}
+                  >
                     {industryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -405,17 +489,21 @@ function App() {
             <div className="side-by-side">
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <BarChart data={performanceData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
-                        dataKey="name" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 10, fill: '#64748b' }}
+                        type="number"
+                        domain={[0, 'dataMax + 5']}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis 
+                        type="category"
+                        dataKey="name" 
+                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
+                        width={90}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
@@ -423,10 +511,28 @@ function App() {
                           borderRadius: '8px',
                           fontSize: '12px'
                         }}
-                        formatter={(value: any) => [Math.round(value * 10) / 10, '']}
+                        formatter={(value: any, name) => {
+                          if (name === 'LCP') return [Math.round(value * 10) / 10 + 's', 'LCP']
+                          if (name === 'FCP') return [Math.round(value * 10) / 10 + 's', 'FCP']
+                          return [value, name]
+                        }}
                       />
-                      <Bar dataKey="lcp" name="LCP (s)" fill="#10b981" radius={[8, 8, 0, 0]} />
-                      <Bar dataKey="fcp" name="FCP (s)" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                      <Bar 
+                        dataKey="lcp" 
+                        name="LCP"
+                        fill="#10b981"
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                      />
+                      <Bar 
+                        dataKey="fcp" 
+                        name="FCP"
+                        fill="#3b82f6"
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -434,19 +540,22 @@ function App() {
               
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Performance vs LCP Correlation</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
                         type="number" 
                         dataKey="score" 
                         name="Performance Score"
                         domain={[0, 100]}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
                       <YAxis 
                         type="number" 
                         dataKey="lcp" 
                         name="LCP (s)"
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
                       <ZAxis type="number" dataKey="sizeMB" range={[50, 400]} name="Size (MB)" />
                       <Tooltip 
@@ -455,7 +564,8 @@ function App() {
                           background: '#ffffff', 
                           border: 'none',
                           borderRadius: '8px',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                         }}
                         formatter={(value: any, name) => {
                           if (name === 'score') return [Math.round(value), 'Score']
@@ -464,10 +574,11 @@ function App() {
                           return [value, name]
                         }}
                       />
-                      <Scatter name="Sites" data={correlationData} fill="#8884d8">
+                      <Scatter name="Sites" data={correlationData} fill="#3b82f6">
                         {correlationData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
                         ))}
+                        <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '11px', fill: '#0f172a', fontWeight: 700 }} />
                       </Scatter>
                     </ScatterChart>
                   </ResponsiveContainer>
@@ -484,17 +595,21 @@ function App() {
             <div className="side-by-side">
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <BarChart data={performanceData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Page Size (MB)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
-                        dataKey="name" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 10, fill: '#64748b' }}
+                        type="number"
+                        domain={[0, 'dataMax + 2']}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis 
+                        type="category"
+                        dataKey="name" 
+                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
+                        width={90}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
@@ -508,8 +623,9 @@ function App() {
                         dataKey="sizeMB" 
                         name="Page Size"
                         fill="#3b82f6"
-                        radius={[8, 8, 0, 0]}
-                        barSize={25}
+                        radius={[0, 8, 8, 0]}
+                        barSize={18}
+                        label={{ position: 'right', fill: '#1e293b', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
@@ -522,17 +638,21 @@ function App() {
               
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <BarChart data={performanceData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Requests & 3rd Party Ratio</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
-                        dataKey="name" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 10, fill: '#64748b' }}
+                        type="number"
+                        domain={[0, 'dataMax + 50']}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis 
+                        type="category"
+                        dataKey="name" 
+                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
+                        width={90}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
@@ -540,14 +660,18 @@ function App() {
                           borderRadius: '8px',
                           fontSize: '12px'
                         }}
-                        formatter={(value: any) => [Math.round(value), '']}
+                        formatter={(value: any, name) => {
+                          if (name === '3rd Party %') return [Math.round(value) + '%', '3rd Party']
+                          return [Math.round(value), name]
+                        }}
                       />
                       <Bar 
                         dataKey="requests" 
                         name="Requests"
                         fill="#10b981"
-                        radius={[8, 8, 0, 0]}
-                        barSize={25}
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600 }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
@@ -557,8 +681,9 @@ function App() {
                         dataKey="thirdPartyRatio" 
                         name="3rd Party %"
                         fill="#f59e0b"
-                        radius={[8, 8, 0, 0]}
-                        barSize={25}
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#f59e0b', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value) + '%' }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} opacity={0.7} />
@@ -579,17 +704,21 @@ function App() {
             <div className="side-by-side">
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <BarChart data={performanceData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
-                        dataKey="name" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 10, fill: '#64748b' }}
+                        type="number"
+                        domain={[0, 'dataMax + 5']}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis 
+                        type="category"
+                        dataKey="name" 
+                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
+                        width={90}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
@@ -607,15 +736,17 @@ function App() {
                         dataKey="lcp" 
                         name="LCP"
                         fill="#10b981"
-                        radius={[8, 8, 0, 0]}
-                        barSize={25}
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                       <Bar 
                         dataKey="fcp" 
                         name="FCP"
                         fill="#3b82f6"
-                        radius={[8, 8, 0, 0]}
-                        barSize={25}
+                        radius={[0, 8, 8, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -624,9 +755,9 @@ function App() {
               
               <div className="half">
                 <div className="chart-container">
-                  <ResponsiveContainer width={500} height={250}>
-                    <BarChart data={performanceData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={performanceData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
                         dataKey="name" 
                         angle={-45}
@@ -634,7 +765,10 @@ function App() {
                         height={60}
                         tick={{ fontSize: 10, fill: '#64748b' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis 
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        domain={[0, 'dataMax + 500']}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
@@ -655,6 +789,7 @@ function App() {
                         fill="#8b5cf6"
                         radius={[8, 8, 0, 0]}
                         barSize={20}
+                        label={{ position: 'top', fill: '#8b5cf6', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                       <Bar 
                         dataKey="si" 
@@ -662,6 +797,7 @@ function App() {
                         fill="#ec4899"
                         radius={[8, 8, 0, 0]}
                         barSize={20}
+                        label={{ position: 'top', fill: '#ec4899', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                       <Bar 
                         dataKey="tbt" 
@@ -669,6 +805,7 @@ function App() {
                         fill="#f59e0b"
                         radius={[8, 8, 0, 0]}
                         barSize={20}
+                        label={{ position: 'top', fill: '#f59e0b', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value) }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -677,50 +814,71 @@ function App() {
             </div>
           </section>
 
-          {/* Time vs Size Correlation */}
+          {/* Page Size Scatter Analysis */}
           <section className="chart-section">
             <div className="section-header">
-              <h2 className="section-label">Time vs Size Correlation</h2>
+              <h2 className="section-label">Page Weight Correlation Analysis</h2>
+              <p className="section-description">Relationship between Page Size, Performance Score, and Request Volume</p>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width={700} height={280}>
-                <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+              <ResponsiveContainer width="100%" height={450}>
+                <ScatterChart margin={{ top: 40, right: 40, left: 10, bottom: 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" strokeOpacity={0.7} />
                   <XAxis 
                     type="number" 
                     dataKey="sizeMB" 
-                    name="Page Size (MB)"
-                    domain={[0, 'dataMax + 2']}
+                    name="Page Size" 
+                    unit="MB"
+                    label={{ value: 'Total Page Size (MB)', position: 'insideBottom', offset: -15, style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
+                    tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
                   />
                   <YAxis 
                     type="number" 
-                    dataKey="lcp" 
-                    name="LCP (s)"
-                    domain={[0, 'dataMax + 5']}
+                    dataKey="score" 
+                    name="Score" 
+                    domain={[0, 100]}
+                    label={{ value: 'Performance Score', angle: -90, position: 'insideLeft', style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
+                    tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
                   />
-                  <ZAxis type="number" dataKey="requests" range={[100, 800]} name="Total Requests" />
+                  <ZAxis type="number" dataKey="requests" range={[150, 1500]} name="Requests" />
                   <Tooltip 
-                    cursor={{ strokeDasharray: '3 3' }}
+                    cursor={{ strokeDasharray: '3 3', stroke: '#475569' }}
                     contentStyle={{ 
                       background: '#ffffff', 
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '12px'
+                      border: '2px solid #e2e8f0', 
+                      borderRadius: '12px', 
+                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                      fontSize: '13px'
                     }}
-                    formatter={(value: any, name) => {
-                      if (name === 'sizeMB') return [Math.round(value * 10) / 10 + ' MB', 'Size']
-                      if (name === 'lcp') return [Math.round(value * 10) / 10 + 's', 'LCP']
-                      if (name === 'requests') return [Math.round(value), 'Requests']
+                    formatter={(value: any, name: string, props: any) => {
+                      if (name === 'Page Size') return [`${value.toFixed(1)} MB`, 'Size']
+                      if (name === 'Score') return [value, 'Score']
+                      if (name === 'Requests') return [value, 'Requests']
+                      if (props.payload.name) return [props.payload.name, 'Site']
                       return [value, name]
                     }}
                   />
-                  <Scatter name="Sites" data={correlationData} fill="#8884d8">
-                    {correlationData.map((entry, index) => (
+                  <Scatter name="Sites" data={performanceData} fill="#3b82f6" fillOpacity={0.8}>
+                    {performanceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
                     ))}
+                    <LabelList 
+                      dataKey="name" 
+                      position="top" 
+                      offset={15} 
+                      style={{ 
+                        fontSize: '12px', 
+                        fill: '#000000', 
+                        fontWeight: 800,
+                        textShadow: '0 0 4px #ffffff'
+                      }} 
+                    />
                   </Scatter>
                 </ScatterChart>
               </ResponsiveContainer>
+              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
+                Bubble size reflects total network requests. Labels identify individual websites.
+              </div>
             </div>
           </section>
         </>
@@ -728,195 +886,275 @@ function App() {
 
       {viewMode === 'detailed' && (
         <>
-          {/* Detailed Metrics Radar Chart */}
+          {/* Individual Site Detailed Breakdowns */}
           <section className="chart-section">
             <div className="section-header">
-              <h2 className="section-label">Detailed Performance Metrics</h2>
-              <p className="section-description">Radar chart showing all key metrics (normalized to 0-100 scale)</p>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={500}>
-                <RadarChart data={radarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="metric" />
-                  <PolarRadiusAxis domain={[0, 100]} />
-                  {filteredResults.slice(0, 4).map((site, index) => {
-                    const shortName = site.name.substring(0, 3)
-                    const colors = [COLORS.blue, COLORS.purple, COLORS.cyan, COLORS.orange]
-                    return (
-                      <Radar
-                        key={site.name}
-                        name={shortName}
-                        dataKey={shortName}
-                        stroke={colors[index % colors.length]}
-                        fill={colors[index % colors.length]}
-                        fillOpacity={0.2}
-                        strokeWidth={2}
-                      />
-                    )
-                  })}
-                  <Legend />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#ffffff', 
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '12px'
-                    }}
-                    formatter={(value) => [`${Math.round(Number(value))}`, 'Score']}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-
-          {/* Resource Breakdown */}
-          <section className="chart-section">
-            <div className="section-header">
-              <h2 className="section-label">Resource Type Breakdown</h2>
-              <p className="section-description">Percentage of total page size by resource type</p>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={resourceBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                    label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#ffffff', 
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '12px'
-                    }}
-                    formatter={(value) => [`${Number(value).toFixed(1)}%`, '']}
-                  />
-                  <Legend />
-                  <Bar dataKey="js" name="JavaScript" stackId="a" fill="#3b82f6" />
-                  <Bar dataKey="css" name="CSS" stackId="a" fill="#14b8a6" />
-                  <Bar dataKey="image" name="Images" stackId="a" fill="#f97316" />
-                  <Bar dataKey="font" name="Fonts" stackId="a" fill="#8b5cf6" />
-                  <Bar dataKey="other" name="Other" stackId="a" fill="#94a3b8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-
-          {/* Performance vs Size Matrix */}
-          <section className="chart-section">
-            <div className="section-header">
-              <h2 className="section-label">Performance vs Size Matrix</h2>
-              <p className="section-description">How different time metrics correlate with page size and requests</p>
-            </div>
-            <div className="side-by-side">
-              <div className="half">
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
-                      <XAxis 
-                        type="number" 
-                        dataKey="sizeMB" 
-                        name="Page Size (MB)"
-                        label={{ value: 'Page Size (MB)', position: 'insideBottom', offset: -10 }}
-                      />
-                      <YAxis 
-                        type="number" 
-                        dataKey="tti" 
-                        name="TTI (s)"
-                        label={{ value: 'TTI (s)', angle: -90, position: 'insideLeft' }}
-                      />
-                      <ZAxis type="number" dataKey="requests" range={[100, 800]} name="Total Requests" />
-                      <Tooltip 
-                        cursor={{ strokeDasharray: '3 3' }}
-                        contentStyle={{ 
-                          background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '12px'
-                        }}
-                        formatter={(value, name) => {
-                          if (name === 'sizeMB') return [`${value} MB`, 'Page Size']
-                          if (name === 'tti') return [`${value}s`, 'TTI']
-                          if (name === 'requests') return [`${value}`, 'Total Requests']
-                          return [value, name]
-                        }}
-                      />
-                      <Legend />
-                      <Scatter name="Sites" data={performanceData} fill="#8884d8">
-                        {performanceData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
-                        ))}
-                      </Scatter>
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              
-              <div className="half">
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
-                      <XAxis 
-                        type="number" 
-                        dataKey="requests" 
-                        name="Total Requests"
-                        label={{ value: 'Total Requests', position: 'insideBottom', offset: -10 }}
-                      />
-                      <YAxis 
-                        type="number" 
-                        dataKey="tbt" 
-                        name="TBT (ms)"
-                        label={{ value: 'TBT (ms)', angle: -90, position: 'insideLeft' }}
-                      />
-                      <ZAxis type="number" dataKey="sizeMB" range={[100, 800]} name="Size (MB)" />
-                      <Tooltip 
-                        cursor={{ strokeDasharray: '3 3' }}
-                        contentStyle={{ 
-                          background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '12px'
-                        }}
-                        formatter={(value, name) => {
-                          if (name === 'requests') return [`${value}`, 'Total Requests']
-                          if (name === 'tbt') return [`${value}ms`, 'TBT']
-                          if (name === 'sizeMB') return [`${value} MB`, 'Page Size']
-                          return [value, name]
-                        }}
-                      />
-                      <Legend />
-                      <Scatter name="Sites" data={performanceData} fill="#8884d8">
-                        {performanceData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
-                        ))}
-                      </Scatter>
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              <h2 className="section-label">Detailed Site Analysis</h2>
+              <p className="section-description">Comprehensive performance breakdown for each website</p>
             </div>
             
-            <div className="insight-card" style={{ marginTop: '2rem', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
-              <h3>⚖️ Performance-Size Tradeoffs</h3>
-              <p>
-                <strong>Analysis:</strong> 
-                • <span style={{ color: '#10b981' }}>Smaller pages (&lt;5MB)</span> tend to have better TTI and TBT scores<br/>
-                • <span style={{ color: '#f59e0b' }}>Medium pages (5-10MB)</span> show mixed performance depending on resource optimization<br/>
-                • <span style={{ color: '#ef4444' }}>Large pages (&gt;10MB)</span> struggle with TBT and TTI even with moderate request counts
-              </p>
-              <p style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-                <strong>Optimization Priority:</strong> Reduce page size first, then optimize request count, 
-                focusing on deferring non-critical JavaScript and compressing images.
-              </p>
-            </div>
+            {filteredResults.map((site, index) => {
+              const siteRanking = data.summary.ranking.find(r => r.name === site.name)
+              const rank = siteRanking?.rank || index + 1
+              
+              // Calculate resource breakdown percentages
+              const categories = ['js', 'css', 'image', 'font', 'other']
+              const resourceData = categories.map(cat => {
+                const catData = site.network.byCategory[cat]
+                return {
+                  name: cat.toUpperCase(),
+                  value: catData ? catData.sizeKB : 0,
+                  percentage: catData ? (catData.sizeKB / site.network.totalSizeKB) * 100 : 0,
+                  count: catData ? catData.count : 0
+                }
+              }).filter(item => item.value > 0)
+              
+              return (
+                <div key={site.name} className="site-detail-card" style={{
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  padding: '2rem',
+                  marginBottom: '2rem',
+                  border: `3px solid ${getIndustryColor(site.industry)}`,
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}>
+                  {/* Site Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                          #{rank} <TextScramble className="font-bold">{site.name}</TextScramble>
+                        </h3>
+                        <span style={{
+                          background: getIndustryColor(site.industry),
+                          color: '#ffffff',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '6px',
+                          fontSize: '0.85rem',
+                          fontWeight: 600
+                        }}>
+                          {site.industry.charAt(0).toUpperCase() + site.industry.slice(1)}
+                        </span>
+                      </div>
+                      <a href={site.url} target="_blank" rel="noopener noreferrer" style={{
+                        color: '#3b82f6',
+                        textDecoration: 'none',
+                        fontSize: '0.95rem'
+                      }}>
+                        {site.url}
+                      </a>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                        Audited: {new Date(site.audited_at).toLocaleString()} • {site.runs_completed} runs
+                      </p>
+                    </div>
+                    <div className={`score-badge ${getScoreBadgeClass(site.lighthouse.performanceScore)}`} style={{
+                      fontSize: '2.5rem',
+                      fontWeight: 700,
+                      padding: '1rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '100px',
+                      textAlign: 'center'
+                    }}>
+                      <AnimatedNumber 
+                        value={site.lighthouse.performanceScore} 
+                        springOptions={{ bounce: 0, duration: 1500 }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Core Web Vitals Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '2rem'
+                  }}>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>LCP</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.lcp} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => val.toFixed(2)}
+                        />s
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>FCP</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.fcp} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => val.toFixed(2)}
+                        />s
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>TBT</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.tbt} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => Math.round(val)}
+                        />ms
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>CLS</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.cls} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => val.toFixed(3)}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>SI</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.si} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => val.toFixed(2)}
+                        />s
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>TTI</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.lighthouse.tti} 
+                          springOptions={{ bounce: 0, duration: 1200 }}
+                          formatValue={(val) => val.toFixed(2)}
+                        />s
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Network Stats */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '2rem',
+                    padding: '1rem',
+                    background: '#f1f5f9',
+                    borderRadius: '8px'
+                  }}>
+                    <div>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>Total Page Size</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.network.totalSizeKB / 1024} 
+                          springOptions={{ bounce: 0, duration: 1500 }}
+                          formatValue={(val) => val.toFixed(2)}
+                        /> MB
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>Total Requests</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.network.totalRequests} 
+                          springOptions={{ bounce: 0, duration: 1500 }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>3rd Party Requests</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+                        <AnimatedNumber 
+                          value={site.network.thirdPartyRequests} 
+                          springOptions={{ bounce: 0, duration: 1500 }}
+                        /> (<AnimatedNumber 
+                          value={site.network.thirdPartyRatio * 100} 
+                          springOptions={{ bounce: 0, duration: 1500 }}
+                          formatValue={(val) => val.toFixed(1)}
+                        />%)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resource Breakdown */}
+                  <div style={{ marginBottom: '2rem' }}>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
+                      Resource Breakdown by Type
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {resourceData.map(resource => (
+                        <div key={resource.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div style={{ minWidth: '80px', fontSize: '0.9rem', fontWeight: 600, color: '#64748b' }}>
+                            {resource.name}
+                          </div>
+                          <div style={{ flex: 1, background: '#e2e8f0', borderRadius: '4px', height: '24px', position: 'relative', overflow: 'hidden' }}>
+                            <div style={{
+                              background: getIndustryColor(site.industry),
+                              height: '100%',
+                              width: `${resource.percentage}%`,
+                              transition: 'width 0.3s ease'
+                            }} />
+                          </div>
+                          <div style={{ minWidth: '120px', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', textAlign: 'right' }}>
+                            {(resource.value / 1024).toFixed(2)} MB ({resource.percentage.toFixed(1)}%)
+                          </div>
+                          <div style={{ minWidth: '80px', fontSize: '0.85rem', color: '#64748b', textAlign: 'right' }}>
+                            {resource.count} files
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Largest Resources */}
+                  {site.largest_resources && site.largest_resources.length > 0 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
+                        🔍 Largest Resources (Optimization Targets)
+                      </h4>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                              <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Rank</th>
+                              <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Resource URL</th>
+                              <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Type</th>
+                              <th style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600, color: '#64748b' }}>Size</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {site.largest_resources.slice(0, 10).map((resource, idx) => (
+                              <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                <td style={{ padding: '0.75rem', fontWeight: 600, color: '#64748b' }}>#{idx + 1}</td>
+                                <td style={{ padding: '0.75rem', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  <a href={resource.url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+                                    {resource.url.length > 60 ? '...' + resource.url.slice(-60) : resource.url}
+                                  </a>
+                                </td>
+                                <td style={{ padding: '0.75rem' }}>
+                                  <span style={{
+                                    background: getIndustryColor(site.industry),
+                                    color: '#ffffff',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600
+                                  }}>
+                                    {resource.category.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600, color: '#1e293b' }}>
+                                  {(resource.sizeKB / 1024).toFixed(2)} MB
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </section>
         </>
       )}
@@ -988,29 +1226,6 @@ function App() {
           </section>
         </>
       )}
-
-      {/* Summary Insights */}
-      <section className="insights-section">
-        <h2 className="section-label">Key Insights</h2>
-        <div className="insights-grid">
-          <div className="insight-card">
-            <h3>🏆 Top Performer</h3>
-            <p><strong>{data.summary.fastest_site}</strong> leads with a score of {data.results.find(s => s.name === data.summary.fastest_site)?.lighthouse.performanceScore}</p>
-          </div>
-          <div className="insight-card">
-            <h3>📊 Industry Leader</h3>
-            <p><strong>Education</strong> sector has the highest average score ({data.summary.industry_avg_score.edducation || data.summary.industry_avg_score.education})</p>
-          </div>
-          <div className="insight-card">
-            <h3>⚡ Fastest LCP</h3>
-            <p><strong>First National Bank BW</strong> has the best LCP at {data.results.find(s => s.name === 'First National Bank BW')?.lighthouse.lcp.toFixed(2)}s</p>
-          </div>
-          <div className="insight-card">
-            <h3>📈 Improvement Opportunity</h3>
-            <p><strong>{data.summary.slowest_site}</strong> needs the most improvement (score: 0)</p>
-          </div>
-        </div>
-      </section>
 
       <footer className="dash-footer">
         <p>Data generated: {new Date(data.meta.generated_at).toLocaleString()}</p>
