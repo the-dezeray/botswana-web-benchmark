@@ -1,0 +1,269 @@
+
+<h2 class="sr-only">Botswana website performance audit dashboard showing Lighthouse scores, LCP times, page sizes, and resource breakdowns for 8 local organisations.</h2>
+
+<style>
+.dash { padding: 1.5rem 0; font-family: var(--font-sans); }
+.section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); margin: 0 0 10px; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+.metric-card .label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px; }
+.metric-card .value { font-size: 22px; font-weight: 500; margin: 0; color: var(--color-text-primary); }
+.metric-card .sub { font-size: 11px; color: var(--color-text-tertiary); margin: 2px 0 0; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.score-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 4px; }
+.score-good { background: #EAF3DE; color: #3B6D11; }
+.score-med { background: #FAEEDA; color: #854F0B; }
+.score-poor { background: #FCEBEB; color: #A32D2D; }
+.score-na { background: var(--color-background-secondary); color: var(--color-text-tertiary); }
+.ranking-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ranking-table th { text-align: left; font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 8px 8px 0; }
+.ranking-table td { padding: 7px 8px 7px 0; border-top: 0.5px solid var(--color-border-tertiary); vertical-align: middle; }
+.ranking-table td:last-child { padding-right: 0; }
+.rank-num { font-size: 11px; color: var(--color-text-tertiary); font-weight: 500; width: 20px; }
+.org-name { font-weight: 500; color: var(--color-text-primary); }
+.org-industry { font-size: 11px; color: var(--color-text-secondary); }
+.score-bar-bg { background: var(--color-background-secondary); border-radius: 3px; height: 6px; width: 80px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.score-bar-fill { height: 100%; border-radius: 3px; }
+.lcp-val { font-size: 12px; color: var(--color-text-secondary); }
+.size-val { font-size: 12px; color: var(--color-text-secondary); }
+</style>
+
+<div class="dash">
+  <p class="section-label">Botswana web performance audit · May 2026 · Mobile simulated</p>
+
+  <div class="metric-grid">
+    <div class="metric-card">
+      <p class="label">Sites audited</p>
+      <p class="value">8</p>
+      <p class="sub">Across 5 industries</p>
+    </div>
+    <div class="metric-card">
+      <p class="label">Fastest site</p>
+      <p class="value" style="font-size:15px; padding-top:4px;">Uni of Botswana</p>
+      <p class="sub">Score 61</p>
+    </div>
+    <div class="metric-card">
+      <p class="label">Slowest site</p>
+      <p class="value" style="font-size:15px; padding-top:4px;">Daily News BW</p>
+      <p class="sub">Score 0 (failed)</p>
+    </div>
+    <div class="metric-card">
+      <p class="label">Avg score (excl. failed)</p>
+      <p class="value">44</p>
+      <p class="sub">Needs improvement</p>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <p class="section-label" style="margin-bottom:8px;">Lighthouse performance scores</p>
+      <div style="position:relative; width:100%; height:260px;">
+        <canvas id="scoreChart" role="img" aria-label="Horizontal bar chart of Lighthouse performance scores. University of Botswana leads at 61, Daily News BW scored 0.">Scores: UB 61, Choppies 50, FNB 49, BPC 42, Orange 39, Mascom 37, StanChart 30, Daily News 0.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label" style="margin-bottom:8px;">Largest contentful paint (seconds)</p>
+      <div style="position:relative; width:100%; height:260px;">
+        <canvas id="lcpChart" role="img" aria-label="Horizontal bar chart of LCP times. Mascom has the worst LCP at 33.95 seconds.">LCP: Mascom 33.95s, Choppies 20.4s, Orange 16.51s, StanChart 14.06s, UB 11.14s, BPC 8.97s, FNB 7.87s, Daily News N/A.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <p class="section-label" style="margin-bottom:8px;">Total page size (KB)</p>
+      <div style="position:relative; width:100%; height:260px;">
+        <canvas id="sizeChart" role="img" aria-label="Bar chart of page sizes. Choppies is the largest at 18916 KB.">Sizes in KB: Choppies 18917, Orange 10766, BPC 8992, Mascom 6689, FNB 5138, UB 4404, StanChart 1994, Daily News 0.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label" style="margin-bottom:8px;">Industry avg score</p>
+      <div style="position:relative; width:100%; height:260px;">
+        <canvas id="industryChart" role="img" aria-label="Bar chart of average scores by industry. Education leads at 61, media at 0.">Industry avgs: Education 61, Retail 50, Banking 40, Utility 42, Telecom 38, Media 0.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-label" style="margin-bottom:10px;">Full site breakdown</p>
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Site</th>
+          <th>Score</th>
+          <th>LCP</th>
+          <th>Page size</th>
+          <th>TBT (ms)</th>
+        </tr>
+      </thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <p class="section-label" style="margin-bottom:10px;">FNB Botswana — resource breakdown by type</p>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; margin-bottom:12px; font-size:12px; color:var(--color-text-secondary);">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#185FA5;"></span>JS 2153 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#0F6E56;"></span>CSS 1796 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#BA7517;"></span>Image 785 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#3B6D11;"></span>Font 171 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#888780;"></span>Other 233 KB</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px;">
+      <canvas id="fnbPie" role="img" aria-label="Donut chart showing FNB BW resource composition. JS and CSS dominate.">FNB resources: JS 42%, CSS 35%, Image 15%, Font 3%, Other 5%.</canvas>
+    </div>
+    <p class="section-label" style="margin-top:1rem; margin-bottom:8px;">Standard Chartered BW — resource breakdown by type</p>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; margin-bottom:12px; font-size:12px; color:var(--color-text-secondary);">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#D85A30;"></span>Image 965 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#185FA5;"></span>JS 806 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#534AB7;"></span>Font 107 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#0F6E56;"></span>CSS 40 KB</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#888780;"></span>Other 76 KB</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px;">
+      <canvas id="scPie" role="img" aria-label="Donut chart showing Standard Chartered BW resource composition. Images and JS dominate.">StanChart resources: Image 48%, JS 40%, Font 5%, Other 4%, CSS 2%.</canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const sites = [
+  { rank:1, name:'University of Botswana', industry:'Education', score:61, lcp:11.14, size:4403.6, tbt:null },
+  { rank:2, name:'Choppies', industry:'Retail', score:50, lcp:20.4, size:18916.5, tbt:null },
+  { rank:3, name:'First National Bank BW', industry:'Banking', score:49, lcp:7.87, size:5137.5, tbt:408 },
+  { rank:4, name:'Botswana Power Corp', industry:'Utility', score:42, lcp:8.97, size:8991.2, tbt:null },
+  { rank:5, name:'Orange Botswana', industry:'Telecom', score:39, lcp:16.51, size:10766.3, tbt:null },
+  { rank:6, name:'Mascom Wireless', industry:'Telecom', score:37, lcp:33.95, size:6688.6, tbt:null },
+  { rank:7, name:'Standard Chartered BW', industry:'Banking', score:30, lcp:14.06, size:1993.6, tbt:1828 },
+  { rank:8, name:'Daily News BW', industry:'Media', score:0, lcp:null, size:0, tbt:null },
+];
+
+function scoreColor(s) {
+  if (s === null || s === 0) return '#888780';
+  if (s >= 50) return '#639922';
+  if (s >= 30) return '#BA7517';
+  return '#E24B4A';
+}
+
+function scoreBadge(s) {
+  if (s === 0) return '<span class="score-badge score-na">Failed</span>';
+  if (s >= 50) return `<span class="score-badge score-good">${s}</span>`;
+  if (s >= 30) return `<span class="score-badge score-med">${s}</span>`;
+  return `<span class="score-badge score-poor">${s}</span>`;
+}
+
+const tbody = document.getElementById('rankBody');
+sites.forEach(s => {
+  const barW = Math.round((s.score / 100) * 80);
+  const barColor = scoreColor(s.score);
+  tbody.innerHTML += `<tr>
+    <td class="rank-num">${s.rank}</td>
+    <td><div class="org-name">${s.name}</div><div class="org-industry">${s.industry}</div></td>
+    <td>
+      <span class="score-bar-bg"><span class="score-bar-fill" style="width:${barW}px;background:${barColor};"></span></span>
+      ${scoreBadge(s.score)}
+    </td>
+    <td class="lcp-val">${s.lcp ? s.lcp + 's' : '—'}</td>
+    <td class="size-val">${s.size ? (s.size/1024).toFixed(1) + ' MB' : '—'}</td>
+    <td class="lcp-val">${s.tbt != null ? s.tbt.toLocaleString() : '—'}</td>
+  </tr>`;
+});
+
+const names = sites.map(s => s.name.replace('First National Bank BW','FNB BW').replace('Botswana Power Corp','BPC').replace('Standard Chartered BW','StanChart BW'));
+const scores = sites.map(s => s.score);
+const scoreColors = scores.map(scoreColor);
+
+new Chart(document.getElementById('scoreChart'), {
+  type: 'bar',
+  data: { labels: names, datasets: [{ label: 'Score', data: scores, backgroundColor: scoreColors, borderRadius: 4 }] },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { min: 0, max: 100, ticks: { font: { size: 11 } }, grid: { color: 'rgba(130,130,120,0.12)' } },
+      y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+const lcpSites = [...sites].filter(s => s.lcp).sort((a,b) => b.lcp - a.lcp);
+new Chart(document.getElementById('lcpChart'), {
+  type: 'bar',
+  data: {
+    labels: lcpSites.map(s => s.name.replace('First National Bank BW','FNB BW').replace('Botswana Power Corp','BPC').replace('Standard Chartered BW','StanChart BW')),
+    datasets: [{ label: 'LCP (s)', data: lcpSites.map(s => s.lcp), backgroundColor: lcpSites.map(s => s.lcp > 20 ? '#E24B4A' : s.lcp > 10 ? '#BA7517' : '#639922'), borderRadius: 4 }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 11 }, callback: v => v + 's' }, grid: { color: 'rgba(130,130,120,0.12)' } },
+      y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+const sizeSorted = [...sites].sort((a,b) => b.size - a.size);
+new Chart(document.getElementById('sizeChart'), {
+  type: 'bar',
+  data: {
+    labels: sizeSorted.map(s => s.name.replace('First National Bank BW','FNB BW').replace('Botswana Power Corp','BPC').replace('Standard Chartered BW','StanChart BW')),
+    datasets: [{ label: 'Size (MB)', data: sizeSorted.map(s => +(s.size/1024).toFixed(1)), backgroundColor: '#185FA5', borderRadius: 4 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 11 }, autoSkip: false, maxRotation: 40 }, grid: { display: false } },
+      y: { ticks: { font: { size: 11 }, callback: v => v + ' MB' }, grid: { color: 'rgba(130,130,120,0.12)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('industryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Education','Retail','Utility','Banking','Telecom','Media'],
+    datasets: [{ label: 'Avg score', data: [61,50,42,40,38,0], backgroundColor: [61,50,42,40,38,0].map(scoreColor), borderRadius: 4 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      y: { min: 0, max: 100, ticks: { font: { size: 11 } }, grid: { color: 'rgba(130,130,120,0.12)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('fnbPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['JS','CSS','Image','Font','Other'],
+    datasets: [{ data: [2153.1,1795.8,784.7,171.2,232.7], backgroundColor: ['#185FA5','#0F6E56','#BA7517','#3B6D11','#888780'], borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(0)} KB` } } },
+    cutout: '60%'
+  }
+});
+
+new Chart(document.getElementById('scPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Image','JS','Font','Other','CSS'],
+    datasets: [{ data: [965.4,805.5,106.5,76.2,39.9], backgroundColor: ['#D85A30','#185FA5','#534AB7','#888780','#0F6E56'], borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(0)} KB` } } },
+    cutout: '60%'
+  }
+});
+</script>
