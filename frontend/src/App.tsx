@@ -1,16 +1,13 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import './App.css'
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, 
-  PieChart, Pie, CartesianGrid, AreaChart, Area, LineChart,
-  ScatterChart, Scatter, ZAxis, Legend, RadarChart, Radar, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, LabelList
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid,
+  ScatterChart, Scatter, ZAxis, LabelList
 } from 'recharts'
 import { 
-  TrendingUp, TrendingDown, Zap, Globe, Package, Clock, 
-  BarChart3, Filter, Eye, Layers, Activity, AlertCircle
+  TrendingUp, Zap, Globe, BarChart3, Filter, Eye, Layers
 } from 'lucide-react'
-import { Circles, Watch } from 'react-loader-spinner'
+import { Circles } from 'react-loader-spinner'
 import { NextAuditTimer } from './NextAuditTimer'
 import { AnimatedNumber } from './components/core/animated-number'
 import { TextScramble } from './components/core/text-scramble'
@@ -105,7 +102,12 @@ function App() {
 
   useEffect(() => {
     fetch('/results_quick.json')
-      .then(res => res.json())
+      .then(res => {
+        const ct = res.headers.get('content-type') || ''
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
+        if (!ct.includes('application/json')) throw new Error(`Expected JSON but server responded with '${ct || 'unknown'}'`)
+        return res.json()
+      })
       .then(jsonData => {
         setData(jsonData)
         setLoading(false)
@@ -146,8 +148,207 @@ function App() {
     [filteredResults]
   )
 
+  // Dynamic chart sizing to handle many items
+  const BAR_ROW_HEIGHT = 28
+  const MIN_CHART_HEIGHT = 300
+  const getChartHeight = (rows: number, min = MIN_CHART_HEIGHT) => Math.max(min, rows * BAR_ROW_HEIGHT)
+
+  // ---- label collision avoidance for scatter charts ----
+  const renderScatterLabels = (props: any) => {
+    const placed: Array<any> = []
+    const labels = (props.payload || []).map((entry: any, i: number) => {
+      // Recharts scatter points provide cx, cy
+      const x = entry.cx ?? entry.x
+      const y = entry.cy ?? entry.y
+      if (x == null || y == null) return null
+
+      const text = String(entry.name || entry.payload?.name || '')
+      const charWidth = 7 // heuristic px per char
+      const maxW = 160
+      const w = Math.min(maxW, Math.max(40, text.length * charWidth))
+      const h = 16
+      const rect = { x1: x - w / 2 - 6, y1: y - 20 - h, x2: x + w / 2 + 6, y2: y - 4 }
+
+      const intersects = placed.some(p => !(p.x2 < rect.x1 || p.x1 > rect.x2 || p.y2 < rect.y1 || p.y1 > rect.y2))
+      if (intersects) return null
+      placed.push(rect)
+
+      return (
+        <text
+          key={`lbl-${i}`}
+          x={x}
+          y={y - 8}
+          textAnchor="middle"
+          style={{ fontSize: 12, fontWeight: 800, fill: '#0f172a', pointerEvents: 'none' }}
+        >
+          {text}
+        </text>
+      )
+    })
+
+    return <g>{labels}</g>
+  }
+
+  // ---- basic pan & zoom state for scatter charts ----
+  const corrContainerRef = useRef<HTMLDivElement | null>(null)
+  const weightContainerRef = useRef<HTMLDivElement | null>(null)
+
+  const [showCorrLabels, setShowCorrLabels] = useState(false)
+  const [showWeightLabels, setShowWeightLabels] = useState(false)
+
+  const corrInitialDomain = useRef<[number, number] | null>(null)
+  const weightInitialDomain = useRef<{ x: [number, number]; y: [number, number] } | null>(null)
+
+  const [corrXDomain, setCorrXDomain] = useState<[number, number]>(() => [0, 100])
+  const [corrYDomain, setCorrYDomain] = useState<[number, number]>(() => [0, 10])
+  const [isCorrPanning, setIsCorrPanning] = useState(false)
+  const corrPanStart = useRef<{ x: number; y: number } | null>(null)
+
+  const [weightXDomain, setWeightXDomain] = useState<[number, number]>([0, 1])
+  const [weightYDomain, setWeightYDomain] = useState<[number, number]>([0, 100])
+  const [isWeightPanning, setIsWeightPanning] = useState(false)
+  const weightPanStart = useRef<{ x: number; y: number } | null>(null)
+
+  const resetCorrZoom = () => {
+    if (corrInitialDomain.current) {
+      setCorrXDomain([0, 100])
+      setCorrYDomain(corrInitialDomain.current)
+    }
+  }
+
+  const resetWeightZoom = () => {
+    if (weightInitialDomain.current) {
+      setWeightXDomain(weightInitialDomain.current.x)
+      setWeightYDomain(weightInitialDomain.current.y)
+    }
+  }
+
+  // initialize domains when data changes
+  useEffect(() => {
+    if (correlationData && correlationData.length > 0) {
+      const lcpVals = correlationData.map(d => d.lcp)
+      const minLcp = Math.max(0, Math.floor(Math.min(...lcpVals)))
+      const maxLcp = Math.ceil(Math.max(...lcpVals) + 1)
+      const domain: [number, number] = [minLcp, Math.max(5, maxLcp)]
+      setCorrYDomain(domain)
+      corrInitialDomain.current = domain
+      setCorrXDomain([0, 100])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredResults])
+
+  useEffect(() => {
+    if (performanceData && performanceData.length > 0) {
+      const sizeVals = performanceData.map(d => d.sizeMB)
+      const minSize = Math.max(0, Math.floor(Math.min(...sizeVals)))
+      const maxSize = Math.ceil(Math.max(...sizeVals) + 1)
+      const xdom: [number, number] = [minSize, Math.max(minSize + 1, maxSize)]
+      const ydom: [number, number] = [0, 100]
+      setWeightXDomain(xdom)
+      setWeightYDomain(ydom)
+      weightInitialDomain.current = { x: xdom, y: ydom }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [performanceData])
+
+  const clampDomain = (domain: [number, number], minAllowed = -Infinity, maxAllowed = Infinity) => {
+    let [a, b] = domain
+    if (a < minAllowed) { const shift = minAllowed - a; a += shift; b += shift }
+    if (b > maxAllowed) { const shift = b - maxAllowed; a -= shift; b -= shift }
+    if (a === b) b = a + 1
+    return [a, b] as [number, number]
+  }
+
+  const handleCorrWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    const factor = e.deltaY < 0 ? 0.9 : 1.1
+    setCorrXDomain(([a, b]) => {
+      const mid = (a + b) / 2
+      const range = (b - a) * factor
+      const nd: [number, number] = [mid - range / 2, mid + range / 2]
+      return clampDomain(nd, 0, 100)
+    })
+    setCorrYDomain(([a, b]) => {
+      const mid = (a + b) / 2
+      const range = (b - a) * factor
+      const nd: [number, number] = [Math.max(0, mid - range / 2), mid + range / 2]
+      return nd
+    })
+  }
+
+  const startPan = (e: React.MouseEvent, kind: 'corr' | 'weight') => {
+    const pos = { x: e.clientX, y: e.clientY }
+    if (kind === 'corr') { setIsCorrPanning(true); corrPanStart.current = pos }
+    else { setIsWeightPanning(true); weightPanStart.current = pos }
+  }
+  const endPan = (kind: 'corr' | 'weight') => {
+    if (kind === 'corr') { setIsCorrPanning(false); corrPanStart.current = null }
+    else { setIsWeightPanning(false); weightPanStart.current = null }
+  }
+
+  const handleCorrMouseMove = (e: React.MouseEvent) => {
+    if (!isCorrPanning || !corrPanStart.current || !corrContainerRef.current) return
+    const rect = corrContainerRef.current.getBoundingClientRect()
+    const dx = e.clientX - corrPanStart.current.x
+    const dy = e.clientY - corrPanStart.current.y
+    const xPercent = dx / rect.width
+    const yPercent = dy / rect.height
+
+    setCorrXDomain(([a, b]) => {
+      const range = b - a
+      const shift = -xPercent * range
+      return clampDomain([a + shift, b + shift], 0, 100)
+    })
+    setCorrYDomain(([a, b]) => {
+      const range = b - a
+      const shift = yPercent * range
+      return [Math.max(0, a + shift), b + shift]
+    })
+
+    corrPanStart.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handleWeightWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    const factor = e.deltaY < 0 ? 0.9 : 1.1
+    if (!weightXDomain || !weightYDomain) return
+    setWeightXDomain(([a, b]) => {
+      const mid = (a + b) / 2
+      const range = (b - a) * factor
+      return [Math.max(0, mid - range / 2), mid + range / 2]
+    })
+    setWeightYDomain(([a, b]) => {
+      const mid = (a + b) / 2
+      const range = (b - a) * factor
+      return [Math.max(0, mid - range / 2), mid + range / 2]
+    })
+  }
+
+  const handleWeightMouseMove = (e: React.MouseEvent) => {
+    if (!isWeightPanning || !weightPanStart.current || !weightContainerRef.current || !weightXDomain || !weightYDomain) return
+    const rect = weightContainerRef.current.getBoundingClientRect()
+    const dx = e.clientX - weightPanStart.current.x
+    const dy = e.clientY - weightPanStart.current.y
+    const xPercent = dx / rect.width
+    const yPercent = dy / rect.height
+
+    setWeightXDomain(([a, b]) => {
+      const range = b - a
+      const shift = -xPercent * range
+      return [Math.max(0, a + shift), Math.max(0 + 1, b + shift)]
+    })
+    setWeightYDomain(([a, b]) => {
+      const range = b - a
+      const shift = yPercent * range
+      return [Math.max(0, a + shift), b + shift]
+    })
+
+    weightPanStart.current = { x: e.clientX, y: e.clientY }
+  }
+
+
   const industryData = useMemo(() => 
-    Object.entries(data?.summary.industry_avg_score || {}).map(([industry, score]) => ({
+    Object.entries((data?.summary?.industry_avg_score) || {}).map(([industry, score]) => ({
       industry: industry.charAt(0).toUpperCase() + industry.slice(1),
       score,
       color: INDUSTRY_COLORS[industry] || COLORS.gray
@@ -170,45 +371,7 @@ function App() {
     [filteredResults]
   )
 
-  const radarData = useMemo(() => {
-    if (filteredResults.length === 0) return []
-    
-    const metrics = ['Performance', 'LCP', 'TBT', 'FCP', 'SI', 'TTI']
-    const normalizedData = metrics.map(metric => {
-      const dataPoint: any = { metric }
-      
-      filteredResults.forEach(site => {
-        const shortName = site.name.substring(0, 3)
-        switch(metric) {
-          case 'Performance': dataPoint[shortName] = site.lighthouse.performanceScore; break
-          case 'LCP': dataPoint[shortName] = Math.max(0, 100 - (site.lighthouse.lcp * 5)); break
-          case 'TBT': dataPoint[shortName] = Math.max(0, 100 - (site.lighthouse.tbt / 10)); break
-          case 'FCP': dataPoint[shortName] = Math.max(0, 100 - (site.lighthouse.fcp * 10)); break
-          case 'SI': dataPoint[shortName] = Math.max(0, 100 - (site.lighthouse.si * 2)); break
-          case 'TTI': dataPoint[shortName] = Math.max(0, 100 - (site.lighthouse.tti * 2)); break
-        }
-      })
-      
-      return dataPoint
-    })
-    
-    return normalizedData
-  }, [filteredResults])
 
-  const resourceBreakdownData = useMemo(() => {
-    const categories = ['js', 'css', 'image', 'font', 'other']
-    return filteredResults.map(site => {
-      const total = site.network.totalSizeKB
-      const breakdown: any = { name: site.name.substring(0, 3) }
-      
-      categories.forEach(cat => {
-        const catData = site.network.byCategory[cat]
-        breakdown[cat] = catData ? (catData.sizeKB / total) * 100 : 0
-      })
-      
-      return breakdown
-    })
-  }, [filteredResults])
 
   // Helper functions
   const getScoreColor = (score: number) => {
@@ -225,11 +388,6 @@ function App() {
     return 'score-poor'
   }
 
-  const getLCPColor = (lcp: number) => {
-    if (lcp > 20) return COLORS.poor
-    if (lcp > 10) return COLORS.warning
-    return COLORS.good
-  }
 
   const getIndustryColor = (industry: string) => {
     return INDUSTRY_COLORS[industry] || COLORS.gray
@@ -318,7 +476,7 @@ function App() {
                 <div className="stat-content">
                   <span className="stat-value">
                     <AnimatedNumber 
-                      value={Math.round(Object.values(data.summary.industry_avg_score).reduce((a, b) => a + b, 0) / Object.keys(data.summary.industry_avg_score).length)}
+                      value={Math.round(Object.values(data?.summary?.industry_avg_score || {}).reduce((a, b) => a + b, 0) / Math.max(1, Object.keys(data?.summary?.industry_avg_score || {}).length))}
                       springOptions={{ bounce: 0, duration: 2000 }}
                     />
                   </span>
@@ -330,7 +488,7 @@ function App() {
                 <div className="stat-content">
                   <span className="stat-value">
                     <TextScramble duration={1800} speed={40}>
-                      {data.summary.fastest_site.substring(0, 8)}...
+                    {data?.summary?.fastest_site ? data.summary.fastest_site.substring(0, 8) + '...' : '—'}
                     </TextScramble>
                   </span>
                   <span className="stat-label">Fastest</span>
@@ -352,7 +510,7 @@ function App() {
               className="industry-select"
             >
               <option value="all">All Industries</option>
-              {Object.keys(data.summary.industry_avg_score).map(industry => (
+              {Object.keys(data?.summary?.industry_avg_score || {}).map(industry => (
                 <option key={industry} value={industry}>
                   {industry.charAt(0).toUpperCase() + industry.slice(1)}
                 </option>
@@ -393,8 +551,8 @@ function App() {
             <div className="section-header">
               <h2 className="section-label">Performance Score by Site</h2>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={300}>
+            <div className="chart-container" style={{ maxHeight: 600, overflowY: 'auto' }}>
+              <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
                 <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left:0 , bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                   <XAxis 
@@ -407,7 +565,7 @@ function App() {
                     type="category" 
                     dataKey="name" 
                     tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 600 }} 
-                    width={90}
+                    width={160}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -423,7 +581,7 @@ function App() {
                     dataKey="score" 
                     name="Performance Score"
                     radius={[0, 8, 8, 0]}
-                    barSize={18}
+                    barSize={20}
                     label={{ position: 'right', fill: '#1e293b', fontSize: 12, fontWeight: 600 }}
                   >
                     {performanceData.map((entry, index) => (
@@ -486,11 +644,11 @@ function App() {
             <div className="section-header">
               <h2 className="section-label">Core Web Vitals Analysis</h2>
             </div>
-            <div className="side-by-side">
-              <div className="half">
+            <div className="side-by-side" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div>
                 <div className="chart-container">
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
                     <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
@@ -502,7 +660,7 @@ function App() {
                         type="category"
                         dataKey="name" 
                         tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={90}
+                        width={160}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -522,42 +680,87 @@ function App() {
                         name="LCP"
                         fill="#10b981"
                         radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        barSize={14}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                       <Bar 
                         dataKey="fcp" 
                         name="FCP"
                         fill="#3b82f6"
                         radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        barSize={14}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-              
-              <div className="half">
+
+              <div>
                 <div className="chart-container">
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Performance vs LCP Correlation</h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <div />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setShowCorrLabels(s => !s)} style={{ padding: '0.35rem 0.6rem' }}>
+                        {showCorrLabels ? 'Hide labels' : 'Show labels'}
+                      </button>
+                      <button onClick={resetCorrZoom} style={{ padding: '0.35rem 0.6rem' }}>Reset zoom</button>
+                    </div>
+                  </div>
+
+                  {/* Slider controls for Corr chart domains */}
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: 220 }}>
+                      <div style={{ fontSize: '0.85rem', color: '#475569' }}>Score X domain: {Math.round(corrXDomain[0])} — {Math.round(corrXDomain[1])}</div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input type="range" min={0} max={100} step={1} value={corrXDomain[0]} onChange={(e) => {
+                          const v = Math.min(Number(e.target.value), corrXDomain[1] - 1)
+                          setCorrXDomain([v, corrXDomain[1]])
+                        }} />
+                        <input type="range" min={0} max={100} step={1} value={corrXDomain[1]} onChange={(e) => {
+                          const v = Math.max(Number(e.target.value), corrXDomain[0] + 1)
+                          setCorrXDomain([corrXDomain[0], v])
+                        }} />
+                      </div>
+                    </div>
+
+                    <div style={{ minWidth: 220 }}>
+                      <div style={{ fontSize: '0.85rem', color: '#475569' }}>LCP Y domain: {corrYDomain ? `${corrYDomain[0]} — ${corrYDomain[1]}` : ''}</div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input type="range" min={(corrInitialDomain.current?.[0] ?? 0)} max={(corrInitialDomain.current?.[1] ?? 10)} step={0.1} value={corrYDomain[0]} onChange={(e) => {
+                          const minAllowed = corrInitialDomain.current?.[0] ?? 0
+                          const maxAllowed = corrYDomain[1] - 0.1
+                          const v = Math.min(Math.max(Number(e.target.value), minAllowed), maxAllowed)
+                          setCorrYDomain([v, corrYDomain[1]])
+                        }} />
+                        <input type="range" min={(corrInitialDomain.current?.[0] ?? 0)} max={(corrInitialDomain.current?.[1] ?? 10)} step={0.1} value={corrYDomain[1]} onChange={(e) => {
+                          const maxAllowed = corrInitialDomain.current?.[1] ?? 10
+                          const v = Math.max(Math.min(Number(e.target.value), maxAllowed), corrYDomain[0] + 0.1)
+                          setCorrYDomain([corrYDomain[0], v])
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
                     <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
                         type="number" 
                         dataKey="score" 
                         name="Performance Score"
-                        domain={[0, 100]}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        domain={corrXDomain}
+                        tick={{ fontSize: 12, fill: '#64748b' }}
                       />
                       <YAxis 
                         type="number" 
                         dataKey="lcp" 
                         name="LCP (s)"
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        domain={corrYDomain}
+                        tick={{ fontSize: 12, fill: '#64748b' }}
                       />
-                      <ZAxis type="number" dataKey="sizeMB" range={[50, 400]} name="Size (MB)" />
+                      <ZAxis type="number" dataKey="sizeMB" range={[60, 500]} name="Size (MB)" />
                       <Tooltip 
                         cursor={{ strokeDasharray: '3 3' }}
                         contentStyle={{ 
@@ -578,7 +781,11 @@ function App() {
                         {correlationData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
                         ))}
-                        <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '11px', fill: '#0f172a', fontWeight: 700 }} />
+                        {showCorrLabels ? (
+                          <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '12px', fill: '#0f172a', fontWeight: 800 }} />
+                        ) : (
+                          <LabelList content={renderScatterLabels} />
+                        )}
                       </Scatter>
                     </ScatterChart>
                   </ResponsiveContainer>
@@ -596,7 +803,7 @@ function App() {
               <div className="half">
                 <div className="chart-container">
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Page Size (MB)</h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
                     <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
@@ -608,7 +815,7 @@ function App() {
                         type="category"
                         dataKey="name" 
                         tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={90}
+                        width={160}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -639,7 +846,7 @@ function App() {
               <div className="half">
                 <div className="chart-container">
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Requests & 3rd Party Ratio</h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
                     <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
@@ -651,7 +858,7 @@ function App() {
                         type="category"
                         dataKey="name" 
                         tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={90}
+                        width={160}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -701,11 +908,11 @@ function App() {
             <div className="section-header">
               <h2 className="section-label">Load Time Analysis</h2>
             </div>
-            <div className="side-by-side">
-              <div className="half">
+            <div className="side-by-side" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div>
                 <div className="chart-container">
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
                     <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
@@ -717,7 +924,7 @@ function App() {
                         type="category"
                         dataKey="name" 
                         tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={90}
+                        width={160}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -737,25 +944,26 @@ function App() {
                         name="LCP"
                         fill="#10b981"
                         radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        barSize={14}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                       <Bar 
                         dataKey="fcp" 
                         name="FCP"
                         fill="#3b82f6"
                         radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        barSize={14}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-              
-              <div className="half">
+
+              <div>
                 <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={250}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>TTI / SI / TBT Comparison</h3>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
                     <BarChart data={performanceData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
                       <XAxis 
@@ -763,7 +971,7 @@ function App() {
                         angle={-45}
                         textAnchor="end"
                         height={60}
-                        tick={{ fontSize: 10, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b' }}
                       />
                       <YAxis 
                         tick={{ fontSize: 11, fill: '#64748b' }}
@@ -821,61 +1029,99 @@ function App() {
               <p className="section-description">Relationship between Page Size, Performance Score, and Request Volume</p>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width="100%" height={450}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <div />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => setShowWeightLabels(s => !s)} style={{ padding: '0.35rem 0.6rem' }}>{showWeightLabels ? 'Hide labels' : 'Show labels'}</button>
+                  <button onClick={resetWeightZoom} style={{ padding: '0.35rem 0.6rem' }}>Reset zoom</button>
+                </div>
+              </div>
+
+              {/* Slider controls for Weight chart domains */}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ minWidth: 220 }}>
+                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Page size X domain: {(weightXDomain || [0,0])[0].toFixed(1)} — {(weightXDomain || [0,0])[1].toFixed(1)}</div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="range" min={(weightInitialDomain.current?.x?.[0] ?? 0)} max={(weightInitialDomain.current?.x?.[1] ?? 100)} step={0.1} value={(weightXDomain || [0,0])[0]} onChange={(e) => {
+                      const val = Math.min(Number(e.target.value), (weightXDomain || [0,0])[1] - 0.1)
+                      setWeightXDomain([val, (weightXDomain || [0,0])[1]])
+                    }} />
+                    <input type="range" min={(weightInitialDomain.current?.x?.[0] ?? 0)} max={(weightInitialDomain.current?.x?.[1] ?? 100)} step={0.1} value={(weightXDomain || [0,0])[1]} onChange={(e) => {
+                      const val = Math.max(Number(e.target.value), (weightXDomain || [0,0])[0] + 0.1)
+                      setWeightXDomain([(weightXDomain || [0,0])[0], val])
+                    }} />
+                  </div>
+                </div>
+
+                <div style={{ minWidth: 220 }}>
+                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Score Y domain: {(weightYDomain || [0,100])[0]} — {(weightYDomain || [0,100])[1]}</div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="range" min={(weightInitialDomain.current?.y?.[0] ?? 0)} max={(weightInitialDomain.current?.y?.[1] ?? 100)} step={1} value={(weightYDomain || [0,100])[0]} onChange={(e) => {
+                      const minAllowed = (weightInitialDomain.current?.y?.[0] ?? 0)
+                      const maxAllowed = (weightYDomain || [0,100])[1] - 1
+                      const v = Math.min(Math.max(Number(e.target.value), minAllowed), maxAllowed)
+                      setWeightYDomain([v, (weightYDomain || [0,100])[1]])
+                    }} />
+                    <input type="range" min={(weightInitialDomain.current?.y?.[0] ?? 0)} max={(weightInitialDomain.current?.y?.[1] ?? 100)} step={1} value={(weightYDomain || [0,100])[1]} onChange={(e) => {
+                      const maxAllowed = (weightInitialDomain.current?.y?.[1] ?? 100)
+                      const v = Math.max(Math.min(Number(e.target.value), maxAllowed), (weightYDomain || [0,100])[0] + 1)
+                      setWeightYDomain([(weightYDomain || [0,100])[0], v])
+                    }} />
+                  </div>
+                </div>
+              </div>
+
+              <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 600)}>
                 <ScatterChart margin={{ top: 40, right: 40, left: 10, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" strokeOpacity={0.7} />
-                  <XAxis 
-                    type="number" 
-                    dataKey="sizeMB" 
-                    name="Page Size" 
-                    unit="MB"
-                    label={{ value: 'Total Page Size (MB)', position: 'insideBottom', offset: -15, style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
-                    tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
-                  />
-                  <YAxis 
-                    type="number" 
-                    dataKey="score" 
-                    name="Score" 
-                    domain={[0, 100]}
-                    label={{ value: 'Performance Score', angle: -90, position: 'insideLeft', style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
-                    tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
-                  />
-                  <ZAxis type="number" dataKey="requests" range={[150, 1500]} name="Requests" />
-                  <Tooltip 
-                    cursor={{ strokeDasharray: '3 3', stroke: '#475569' }}
-                    contentStyle={{ 
-                      background: '#ffffff', 
-                      border: '2px solid #e2e8f0', 
-                      borderRadius: '12px', 
-                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                      fontSize: '13px'
-                    }}
-                    formatter={(value: any, name: string, props: any) => {
-                      if (name === 'Page Size') return [`${value.toFixed(1)} MB`, 'Size']
-                      if (name === 'Score') return [value, 'Score']
-                      if (name === 'Requests') return [value, 'Requests']
-                      if (props.payload.name) return [props.payload.name, 'Site']
-                      return [value, name]
-                    }}
-                  />
-                  <Scatter name="Sites" data={performanceData} fill="#3b82f6" fillOpacity={0.8}>
-                    {performanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
-                    ))}
-                    <LabelList 
-                      dataKey="name" 
-                      position="top" 
-                      offset={15} 
-                      style={{ 
-                        fontSize: '12px', 
-                        fill: '#000000', 
-                        fontWeight: 800,
-                        textShadow: '0 0 4px #ffffff'
-                      }} 
+                    <XAxis 
+                      type="number" 
+                      dataKey="sizeMB" 
+                      name="Page Size" 
+                      unit="MB"
+                      domain={weightXDomain || undefined}
+                      label={{ value: 'Total Page Size (MB)', position: 'insideBottom', offset: -15, style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
+                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
                     />
-                  </Scatter>
-                </ScatterChart>
-              </ResponsiveContainer>
+                    <YAxis 
+                      type="number" 
+                      dataKey="score" 
+                      name="Score" 
+                      domain={weightYDomain || [0, 100]}
+                      label={{ value: 'Performance Score', angle: -90, position: 'insideLeft', style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
+                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+                    />
+                    <ZAxis type="number" dataKey="requests" range={[150, 1500]} name="Requests" />
+                    <Tooltip 
+                      cursor={{ strokeDasharray: '3 3', stroke: '#475569' }}
+                      contentStyle={{ 
+                        background: '#ffffff', 
+                        border: '2px solid #e2e8f0', 
+                        borderRadius: '12px', 
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        fontSize: '13px'
+                      }}
+                      formatter={(value: any, name: string, props: any) => {
+                        if (name === 'Page Size') return [`${value.toFixed(1)} MB`, 'Size']
+                        if (name === 'Score') return [value, 'Score']
+                        if (name === 'Requests') return [value, 'Requests']
+                        if (props.payload.name) return [props.payload.name, 'Site']
+                        return [value, name]
+                      }}
+                    />
+                    <Scatter name="Sites" data={performanceData} fill="#3b82f6" fillOpacity={0.8}>
+                        {performanceData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
+                        ))}
+                        {showWeightLabels ? (
+                          <LabelList dataKey="name" position="top" offset={15} style={{ fontSize: '12px', fill: '#000000', fontWeight: 800, textShadow: '0 0 4px #ffffff' }} />
+                        ) : (
+                          <LabelList content={renderScatterLabels} />
+                        )}
+                      </Scatter>
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
               <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
                 Bubble size reflects total network requests. Labels identify individual websites.
               </div>
@@ -894,7 +1140,7 @@ function App() {
             </div>
             
             {filteredResults.map((site, index) => {
-              const siteRanking = data.summary.ranking.find(r => r.name === site.name)
+              const siteRanking = data?.summary?.ranking?.find(r => r.name === site.name)
               const rank = siteRanking?.rank || index + 1
               
               // Calculate resource breakdown percentages
@@ -995,7 +1241,7 @@ function App() {
                         <AnimatedNumber 
                           value={site.lighthouse.tbt} 
                           springOptions={{ bounce: 0, duration: 1200 }}
-                          formatValue={(val) => Math.round(val)}
+                          formatValue={(val) => Math.round(val).toString()}
                         />ms
                       </div>
                     </div>
@@ -1185,8 +1431,8 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.summary.ranking.map(site => {
-                    const fullSite = data.results.find(s => s.name === site.name)
+                  {(data?.summary?.ranking || []).map(site => {
+                    const fullSite = data?.results?.find(s => s.name === site.name)
                     if (!fullSite) return null
                     
                     return (

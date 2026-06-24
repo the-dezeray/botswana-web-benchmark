@@ -6,7 +6,8 @@
   "scripts": {
     "audit": "node audit.js --sites sites.json --runs 3 --out results.json",
     "audit:5runs": "node audit.js --sites sites.json --runs 5 --out results.json",
-    "audit:quick": "node audit.js --sites sites.json --runs 1 --out results_quick.json"
+    "audit:quick": "node audit.js --sites sites.json --runs 1 --out results_quick.json",
+    "audit:quick:playwright": "bash ./run_quick_audit.sh"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -15,5 +16,8 @@
     "chrome-launcher": "^1.1.2",
     "lighthouse": "^12.0.0",
     "playwright": "^1.44.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.2.0"
   }
 }

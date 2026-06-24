@@ -20,12 +20,9 @@ export function TextScramble({
   // Convert children to string
   const targetText = String(children || '');
   const [displayText, setDisplayText] = useState(targetText);
-  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (!targetText) return;
-    
-    setIsAnimating(true);
     const iterations = Math.floor(duration / speed);
     let currentIteration = 0;
 
@@ -48,7 +45,6 @@ export function TextScramble({
       if (currentIteration >= targetText.length) {
         clearInterval(interval);
         setDisplayText(targetText);
-        setIsAnimating(false);
       }
     }, speed);
 
