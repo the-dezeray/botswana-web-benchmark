@@ -1125,7 +1125,6 @@ function App() {
               <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
                 Bubble size reflects total network requests. Labels identify individual websites.
               </div>
-            </div>
           </section>
         </>
       )}
