@@ -33,15 +33,28 @@
     // ─── CLI args ────────────────────────────────────────────────────────────────
     const { values: args } = parseArgs({
       options: {
-        sites: { type: "string", default: "sites.json" },
-        runs:  { type: "string", default: "3" },
-        out:   { type: "string", default: "results.json" },
+        sites:        { type: "string", default: "sites.json" },
+        runs:         { type: "string", default: "3" },
+        out:          { type: "string", default: "results.json" },
+        concurrency:  { type: "string", default: "1" },
+        "chrome-path": { type: "string", default: "" },
       },
     });
 
-    const SITES_FILE = args.sites;
-    const NUM_RUNS   = Math.max(1, parseInt(args.runs, 10));
-    const OUT_FILE   = args.out;
+    const SITES_FILE   = args.sites;
+    const NUM_RUNS     = Math.max(1, parseInt(args.runs, 10));
+    const OUT_FILE     = args.out;
+    const CONCURRENCY  = Math.max(1, parseInt(args.concurrency, 10));
+    const CHROME_PATH  = args["chrome-path"] || process.env.CHROME_PATH || "";
+    if (CHROME_PATH) process.env.CHROME_PATH = CHROME_PATH; // ensure chrome-launcher picks it up
+
+    // Lighthouse is not concurrency-safe — serialize all LH runs via a mutex
+    let lhMutexTail = Promise.resolve();
+    function withLighthouseLock(fn) {
+      const next = lhMutexTail.then(() => fn());
+      lhMutexTail = next.catch(() => {});
+      return next;
+    }
 
     // ─── Config ──────────────────────────────────────────────────────────────────
     const LIGHTHOUSE_FLAGS = {
@@ -113,7 +126,7 @@
 
     // ─── Playwright network capture ───────────────────────────────────────────────
     async function captureNetworkData(url) {
-      const browser = await chromium.launch({ headless: true });
+      const browser = await chromium.launch({ headless: true, executablePath: CHROME_PATH || undefined });
       const context = await browser.newContext({
         userAgent:
           "Mozilla/5.0 (Linux; Android 9; Moto G4 Build/PPIS29.93-14.4-3) " +
@@ -211,6 +224,7 @@
 
   const launch = await getChromeLauncher();
   const chrome = await launch({
+        chromePath: CHROME_PATH || undefined,
         chromeFlags: [
           "--headless",
           "--no-sandbox",
@@ -283,22 +297,26 @@
       for (let i = 1; i <= NUM_RUNS; i++) {
         console.log(`   Run ${i}/${NUM_RUNS}...`);
 
-        // Lighthouse
-        try {
-          const lh = await runLighthouse(url);
+        // Run Lighthouse (serialized globally) and Playwright in parallel
+        const [lhResult, netResult] = await Promise.allSettled([
+          withLighthouseLock(() => runLighthouse(url)),
+          captureNetworkData(url),
+        ]);
+
+        if (lhResult.status === "fulfilled") {
+          const lh = lhResult.value;
           lighthouseTrials.push(lh);
           console.log(`     LH score: ${lh.performanceScore}  LCP: ${lh.lcp ?? "n/a"}s  TBT: ${lh.tbt ?? "n/a"}ms`);
-        } catch (e) {
-          console.warn(`     ✗ Lighthouse failed: ${e.message}`);
+        } else {
+          console.warn(`     ✗ Lighthouse failed: ${lhResult.reason.message}`);
         }
 
-        // Network via Playwright
-        try {
-          const net = await captureNetworkData(url);
+        if (netResult.status === "fulfilled") {
+          const net = netResult.value;
           networkTrials.push(net);
           console.log(`     Network: ${net.totalSizeKB} KB / ${net.totalRequests} reqs`);
-        } catch (e) {
-          console.warn(`     ✗ Playwright failed: ${e.message}`);
+        } else {
+          console.warn(`     ✗ Playwright failed: ${netResult.reason.message}`);
         }
 
         // Brief cooldown between runs
@@ -368,35 +386,53 @@
 
       const sites = JSON.parse(fs.readFileSync(SITES_FILE, "utf8"));
       console.log(`\n🔍 Botswana Web Performance Auditor`);
-      console.log(`   Sites:  ${sites.length}`);
-      console.log(`   Runs:   ${NUM_RUNS} per site`);
-      console.log(`   Output: ${OUT_FILE}\n`);
+      console.log(`   Sites:       ${sites.length}`);
+      console.log(`   Runs:        ${NUM_RUNS} per site`);
+      console.log(`   Concurrency: ${CONCURRENCY}`);
+      console.log(`   Output:      ${OUT_FILE}\n`);
 
-      const results = [];
+      const results = new Array(sites.length).fill(null);
 
-      for (const site of sites) {
-        try {
-          const result = await auditSite(site);
-          results.push(result);
-          // Save incrementally in case of crash
-          fs.writeFileSync(OUT_FILE, JSON.stringify({ meta: buildMeta(sites.length, NUM_RUNS), results }, null, 2));
-          console.log(`   ✓ Saved`);
-        } catch (e) {
-          console.error(`   ✗ Fatal error for ${site.url}: ${e.message}`);
-          results.push({ name: site.name, url: site.url, error: e.message });
+      // Concurrency pool: process at most CONCURRENCY sites at once
+      const queue = sites.map((site, idx) => ({ site, idx }));
+      let active = 0;
+
+      await new Promise((resolve) => {
+        function next() {
+          while (active < CONCURRENCY && queue.length) {
+            const { site, idx } = queue.shift();
+            active++;
+            auditSite(site)
+              .then((result) => { results[idx] = result; })
+              .catch((e) => {
+                console.error(`   ✗ Fatal error for ${site.url}: ${e.message}`);
+                results[idx] = { name: site.name, url: site.url, error: e.message };
+              })
+              .finally(() => {
+                // Save incrementally
+                const done = results.filter(Boolean);
+                fs.writeFileSync(OUT_FILE, JSON.stringify({ meta: buildMeta(sites.length, NUM_RUNS), results: done }, null, 2));
+                console.log(`   ✓ Saved (${done.length}/${sites.length})`);
+                active--;
+                if (queue.length === 0 && active === 0) resolve();
+                else next();
+              });
+          }
         }
-      }
+        next();
+      });
 
       // Final write with analysis summary
+      const finalResults = results.filter(Boolean);
       const output = {
         meta:     buildMeta(sites.length, NUM_RUNS),
-        summary:  buildSummary(results),
-        results,
+        summary:  buildSummary(finalResults),
+        results:  finalResults,
       };
 
       fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
       console.log(`\n✅ Done → ${OUT_FILE}`);
-      printSummaryTable(results);
+      printSummaryTable(finalResults);
     }
 
     function buildMeta(siteCount, runs) {

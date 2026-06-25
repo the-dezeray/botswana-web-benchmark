@@ -4,9 +4,10 @@
   "description": "Web performance auditor for Botswana company websites",
   "main": "audit.js",
   "scripts": {
-    "audit": "node audit.js --sites sites.json --runs 3 --out results.json",
-    "audit:5runs": "node audit.js --sites sites.json --runs 5 --out results.json",
-    "audit:quick": "node audit.js --sites sites.json --runs 1 --out results_quick.json",
+    "audit": "node audit.js --sites sites.json --runs 3 --out results.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
+    "audit:5runs": "node audit.js --sites sites.json --runs 5 --out results.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
+    "audit:quick": "node audit.js --sites sites.json --runs 1 --out results_quick.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
+    "audit:quick:parallel": "node audit.js --sites sites.json --runs 1 --out results_quick.json --concurrency 3 --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
     "audit:quick:playwright": "bash ./run_quick_audit.sh"
   },
   "engines": {
