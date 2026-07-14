@@ -8,7 +8,8 @@
     "audit:5runs": "node audit.js --sites sites.json --runs 5 --out results.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
     "audit:quick": "node audit.js --sites sites.json --runs 1 --out results_quick.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
     "audit:quick:parallel": "node audit.js --sites sites.json --runs 1 --out results_quick.json --concurrency 3 --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
-    "audit:quick:playwright": "bash ./run_quick_audit.sh"
+    "audit:quick:playwright": "bash ./run_quick_audit.sh",
+   "audit:zero-scores": "node audit-zero-scores.js --sites sites.json --runs 1 --out results.json"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -74,11 +74,7 @@
     "url": "https://www.bdc.bw",
     "industry": "investment"
   },
-  {
-    "name": "Sechaba Brewery Holdings",
-    "url": "https://www.sechaba.com",
-    "industry": "beverages"
-  },
+
   {
     "name": "Wilderness Safaris",
     "url": "https://www.wildernessdestinations.com",
@@ -89,19 +85,15 @@
     "url": "https://www.turnstar.co.bw",
     "industry": "real-estate"
   },
-  {
-    "name": "Primetime Property Holdings",
-    "url": "https://www.primetime.co.bw",
-    "industry": "real-estate"
-  },
+
   {
     "name": "BotswanaPost",
-    "url": "https://www.botspost.co.bw",
+    "url": "https://botswanapost.post/",
     "industry": "logistics"
   },
   {
     "name": "BCL Limited",
-    "url": "https://www.bcl.bw",
+    "url": "https://bclmine.com/",
     "industry": "mining"
   },
   {
@@ -181,7 +173,7 @@
   },
   {
     "name": "Khoemacau Copper Mining",
-    "url": "https://www.khoemacaumining.com",
+    "url": "https://www.mmg.com/operations/khoemacau/",
     "industry": "mining"
   },
   {
@@ -196,7 +188,7 @@
   },
   {
     "name": "Botho University",
-    "url": "https://www.botho.edu.bw",
+    "url": "https://www.bothouniversity.com/",
     "industry": "education"
   },
   {
@@ -259,26 +251,8 @@
     "url": "https://www.bih.co.bw",
     "industry": "technology"
   },
-  {
-    "name": "iBranch Botswana",
-    "url": "https://www.ibranch.co.bw",
-    "industry": "technology"
-  },
-  {
-    "name": "AppLab Botswana",
-    "url": "https://www.applab.co.bw",
-    "industry": "technology"
-  },
-  {
-    "name": "YFM Botswana",
-    "url": "https://www.yfm.co.bw",
-    "industry": "media"
-  },
-  {
-    "name": "Duma FM",
-    "url": "https://www.duma.fm",
-    "industry": "media"
-  },
+
+
   {
     "name": "Mmegi Online",
     "url": "https://www.mmegi.bw",
