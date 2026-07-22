@@ -149,8 +149,8 @@ function App() {
   )
 
   // Dynamic chart sizing to handle many items
-  const BAR_ROW_HEIGHT = 28
-  const MIN_CHART_HEIGHT = 300
+  const BAR_ROW_HEIGHT = 24 // reduced from 28
+  const MIN_CHART_HEIGHT = 250 // reduced from 300
   const getChartHeight = (rows: number, min = MIN_CHART_HEIGHT) => Math.max(min, rows * BAR_ROW_HEIGHT)
 
   // ---- label collision avoidance for scatter charts ----
@@ -551,38 +551,41 @@ function App() {
             <div className="section-header">
               <h2 className="section-label">Performance Score by Site</h2>
             </div>
-            <div className="chart-container" style={{ maxHeight: 600, overflowY: 'auto' }}>
+            <div className="chart-container" style={{ maxHeight: 500, overflowY: 'auto' }}>
               <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
-                <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left:0 , bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                <BarChart data={performanceData} layout="vertical" margin={{ top: 15, right: 55, left: 0, bottom: 15 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                   <XAxis 
                     type="number"
                     domain={[0, 100]}
                     ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                    axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                   />
                   <YAxis 
                     type="category" 
                     dataKey="name" 
-                    tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 600 }} 
-                    width={160}
+                    tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                    width={150}
+                    axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                   />
                   <Tooltip 
                     contentStyle={{ 
                       background: '#ffffff', 
-                      border: 'none',
-                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
                       fontSize: '12px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      padding: '8px 12px'
                     }}
-                    formatter={(value: any) => [Math.round(value), 'Score']}
+                    formatter={(value: any) => [Number(value).toFixed(1), 'Score']}
                   />
                   <Bar 
                     dataKey="score" 
                     name="Performance Score"
-                    radius={[0, 8, 8, 0]}
-                    barSize={20}
-                    label={{ position: 'right', fill: '#1e293b', fontSize: 12, fontWeight: 600 }}
+                    radius={[0, 4, 4, 0]}
+                    barSize={16}
+                    label={{ position: 'right', fill: '#1e293b', fontSize: 11, fontWeight: 500 }}
                   >
                     {performanceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />
@@ -599,36 +602,39 @@ function App() {
               <h2 className="section-label">Industry Performance Comparison</h2>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={industryData} layout="vertical" margin={{ top: 5, right: 50, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={industryData} layout="vertical" margin={{ top: 10, right: 55, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                   <XAxis 
                     type="number"
                     domain={[0, 100]}
                     ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                    axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                   />
                   <YAxis 
                     type="category" 
                     dataKey="industry" 
-                    tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 600 }} 
-                    width={100}
+                    tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                    width={90}
+                    axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                   />
                   <Tooltip 
                     contentStyle={{ 
                       background: '#ffffff', 
-                      border: 'none',
-                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
                       fontSize: '12px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      padding: '8px 12px'
                     }}
-                    formatter={(value: any) => [Math.round(value), 'Avg Score']}
+                    formatter={(value: any) => [Number(value).toFixed(1), 'Avg Score']}
                   />
                   <Bar 
                     dataKey="score" 
-                    radius={[0, 8, 8, 0]} 
-                    barSize={18}
-                    label={{ position: 'right', fill: '#1e293b', fontSize: 12, fontWeight: 600 }}
+                    radius={[0, 4, 4, 0]} 
+                    barSize={14}
+                    label={{ position: 'right', fill: '#1e293b', fontSize: 11, fontWeight: 500 }}
                   >
                     {industryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -647,31 +653,35 @@ function App() {
             <div className="side-by-side" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div>
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
-                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
-                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 350)}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 55, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                       <XAxis 
                         type="number"
                         domain={[0, 'dataMax + 5']}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
                         type="category"
                         dataKey="name" 
-                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={160}
+                        tick={{ fontSize: 9, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                        width={140}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px'
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
                         formatter={(value: any, name) => {
-                          if (name === 'LCP') return [Math.round(value * 10) / 10 + 's', 'LCP']
-                          if (name === 'FCP') return [Math.round(value * 10) / 10 + 's', 'FCP']
+                          if (name === 'LCP') return [Number(value).toFixed(2) + 's', 'LCP']
+                          if (name === 'FCP') return [Number(value).toFixed(2) + 's', 'FCP']
                           return [value, name]
                         }}
                       />
@@ -679,17 +689,17 @@ function App() {
                         dataKey="lcp" 
                         name="LCP"
                         fill="#10b981"
-                        radius={[0, 8, 8, 0]}
-                        barSize={14}
-                        label={{ position: 'right', fill: '#10b981', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                       <Bar 
                         dataKey="fcp" 
                         name="FCP"
                         fill="#3b82f6"
-                        radius={[0, 8, 8, 0]}
-                        barSize={14}
-                        label={{ position: 'right', fill: '#3b82f6', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -698,21 +708,21 @@ function App() {
 
               <div>
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Performance vs LCP Correlation</h3>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>Performance vs LCP Correlation</h3>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <div />
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button onClick={() => setShowCorrLabels(s => !s)} style={{ padding: '0.35rem 0.6rem' }}>
+                      <button onClick={() => setShowCorrLabels(s => !s)} style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}>
                         {showCorrLabels ? 'Hide labels' : 'Show labels'}
                       </button>
-                      <button onClick={resetCorrZoom} style={{ padding: '0.35rem 0.6rem' }}>Reset zoom</button>
+                      <button onClick={resetCorrZoom} style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}>Reset zoom</button>
                     </div>
                   </div>
 
                   {/* Slider controls for Corr chart domains */}
                   <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                     <div style={{ minWidth: 220 }}>
-                      <div style={{ fontSize: '0.85rem', color: '#475569' }}>Score X domain: {Math.round(corrXDomain[0])} — {Math.round(corrXDomain[1])}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#475569' }}>Score X domain: {Math.round(corrXDomain[0])} — {Math.round(corrXDomain[1])}</div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <input type="range" min={0} max={100} step={1} value={corrXDomain[0]} onChange={(e) => {
                           const v = Math.min(Number(e.target.value), corrXDomain[1] - 1)
@@ -726,7 +736,7 @@ function App() {
                     </div>
 
                     <div style={{ minWidth: 220 }}>
-                      <div style={{ fontSize: '0.85rem', color: '#475569' }}>LCP Y domain: {corrYDomain ? `${corrYDomain[0]} — ${corrYDomain[1]}` : ''}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#475569' }}>LCP Y domain: {corrYDomain ? `${corrYDomain[0]} — ${corrYDomain[1]}` : ''}</div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <input type="range" min={(corrInitialDomain.current?.[0] ?? 0)} max={(corrInitialDomain.current?.[1] ?? 10)} step={0.1} value={corrYDomain[0]} onChange={(e) => {
                           const minAllowed = corrInitialDomain.current?.[0] ?? 0
@@ -743,37 +753,40 @@ function App() {
                     </div>
                   </div>
 
-                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 350)}>
                     <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                       <XAxis 
                         type="number" 
                         dataKey="score" 
                         name="Performance Score"
                         domain={corrXDomain}
-                        tick={{ fontSize: 12, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
                         type="number" 
                         dataKey="lcp" 
                         name="LCP (s)"
                         domain={corrYDomain}
-                        tick={{ fontSize: 12, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
-                      <ZAxis type="number" dataKey="sizeMB" range={[60, 500]} name="Size (MB)" />
+                      <ZAxis type="number" dataKey="sizeMB" range={[50, 400]} name="Size (MB)" />
                       <Tooltip 
                         cursor={{ strokeDasharray: '3 3' }}
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
                           fontSize: '12px',
-                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
                         formatter={(value: any, name) => {
-                          if (name === 'score') return [Math.round(value), 'Score']
-                          if (name === 'lcp') return [Math.round(value * 10) / 10 + 's', 'LCP']
-                          if (name === 'sizeMB') return [Math.round(value * 10) / 10 + ' MB', 'Size']
+                          if (name === 'score') return [Number(value).toFixed(1), 'Score']
+                          if (name === 'lcp') return [Number(value).toFixed(2) + 's', 'LCP']
+                          if (name === 'sizeMB') return [Number(value).toFixed(2) + ' MB', 'Size']
                           return [value, name]
                         }}
                       />
@@ -782,7 +795,7 @@ function App() {
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
                         ))}
                         {showCorrLabels ? (
-                          <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '12px', fill: '#0f172a', fontWeight: 800 }} />
+                          <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '11px', fill: '#0f172a', fontWeight: 700 }} />
                         ) : (
                           <LabelList content={renderScatterLabels} />
                         )}
@@ -802,37 +815,41 @@ function App() {
             <div className="side-by-side">
               <div className="half">
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Page Size (MB)</h3>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>Page Size (MB)</h3>
                   <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
-                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 55, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                       <XAxis 
                         type="number"
                         domain={[0, 'dataMax + 2']}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
                         type="category"
                         dataKey="name" 
-                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={160}
+                        tick={{ fontSize: 9, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                        width={140}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px'
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
-                        formatter={(value: any) => [Math.round(value * 10) / 10 + ' MB', 'Size']}
+                        formatter={(value: any) => [Number(value).toFixed(2) + ' MB', 'Size']}
                       />
                       <Bar 
                         dataKey="sizeMB" 
                         name="Page Size"
                         fill="#3b82f6"
-                        radius={[0, 8, 8, 0]}
-                        barSize={18}
-                        label={{ position: 'right', fill: '#1e293b', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={15}
+                        label={{ position: 'right', fill: '#1e293b', fontSize: 9, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
@@ -845,30 +862,34 @@ function App() {
               
               <div className="half">
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>Requests & 3rd Party Ratio</h3>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>Requests & 3rd Party Ratio</h3>
                   <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length)}>
-                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 55, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                       <XAxis 
                         type="number"
                         domain={[0, 'dataMax + 50']}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
                         type="category"
                         dataKey="name" 
-                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={160}
+                        tick={{ fontSize: 9, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                        width={140}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px'
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
                         formatter={(value: any, name) => {
-                          if (name === '3rd Party %') return [Math.round(value) + '%', '3rd Party']
+                          if (name === '3rd Party %') return [Number(value).toFixed(1) + '%', '3rd Party']
                           return [Math.round(value), name]
                         }}
                       />
@@ -876,9 +897,9 @@ function App() {
                         dataKey="requests" 
                         name="Requests"
                         fill="#10b981"
-                        radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 600 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={10}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 9, fontWeight: 500 }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
@@ -888,9 +909,9 @@ function App() {
                         dataKey="thirdPartyRatio" 
                         name="3rd Party %"
                         fill="#f59e0b"
-                        radius={[0, 8, 8, 0]}
-                        barSize={12}
-                        label={{ position: 'right', fill: '#f59e0b', fontSize: 10, fontWeight: 600, formatter: (value: any) => Math.round(value) + '%' }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={10}
+                        label={{ position: 'right', fill: '#f59e0b', fontSize: 9, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(0) + '%' }}
                       >
                         {performanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} opacity={0.7} />
@@ -911,31 +932,35 @@ function App() {
             <div className="side-by-side" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div>
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
-                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
-                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 50, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>LCP & FCP (seconds)</h3>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 350)}>
+                    <BarChart data={performanceData} layout="vertical" margin={{ top: 10, right: 55, left: 0, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                       <XAxis 
                         type="number"
                         domain={[0, 'dataMax + 5']}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
                         type="category"
                         dataKey="name" 
-                        tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }} 
-                        width={160}
+                        tick={{ fontSize: 9, fill: '#1e293b', fontWeight: 500, fontFamily: 'system-ui' }} 
+                        width={140}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px'
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
                         formatter={(value: any, name) => {
-                          if (name === 'lcp') return [Math.round(value * 10) / 10 + 's', 'LCP']
-                          if (name === 'fcp') return [Math.round(value * 10) / 10 + 's', 'FCP']
+                          if (name === 'lcp') return [Number(value).toFixed(2) + 's', 'LCP']
+                          if (name === 'fcp') return [Number(value).toFixed(2) + 's', 'FCP']
                           return [value, name]
                         }}
                       />
@@ -943,17 +968,17 @@ function App() {
                         dataKey="lcp" 
                         name="LCP"
                         fill="#10b981"
-                        radius={[0, 8, 8, 0]}
-                        barSize={14}
-                        label={{ position: 'right', fill: '#10b981', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#10b981', fontSize: 10, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                       <Bar 
                         dataKey="fcp" 
                         name="FCP"
                         fill="#3b82f6"
-                        radius={[0, 8, 8, 0]}
-                        barSize={14}
-                        label={{ position: 'right', fill: '#3b82f6', fontSize: 11, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[0, 4, 4, 0]}
+                        barSize={12}
+                        label={{ position: 'right', fill: '#3b82f6', fontSize: 10, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -962,31 +987,35 @@ function App() {
 
               <div>
                 <div className="chart-container">
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#1e293b' }}>TTI / SI / TBT Comparison</h3>
-                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 420)}>
-                    <BarChart data={performanceData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.6} />
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: '#1e293b' }}>TTI / SI / TBT Comparison</h3>
+                  <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 350)}>
+                    <BarChart data={performanceData} margin={{ top: 15, right: 20, left: 0, bottom: 35 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
                       <XAxis 
                         dataKey="name" 
                         angle={-45}
                         textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        height={50}
+                        tick={{ fontSize: 9, fill: '#64748b', fontFamily: 'system-ui' }}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <YAxis 
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#64748b', fontFamily: 'system-ui' }}
                         domain={[0, 'dataMax + 500']}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px'
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          padding: '8px 12px'
                         }}
                         formatter={(value: any, name) => {
-                          if (name === 'tti') return [Math.round(value * 10) / 10 + 's', 'TTI']
-                          if (name === 'si') return [Math.round(value * 10) / 10 + 's', 'SI']
+                          if (name === 'tti') return [Number(value).toFixed(2) + 's', 'TTI']
+                          if (name === 'si') return [Number(value).toFixed(2) + 's', 'SI']
                           if (name === 'tbt') return [Math.round(value) + 'ms', 'TBT']
                           return [value, name]
                         }}
@@ -995,25 +1024,25 @@ function App() {
                         dataKey="tti" 
                         name="TTI"
                         fill="#8b5cf6"
-                        radius={[8, 8, 0, 0]}
-                        barSize={20}
-                        label={{ position: 'top', fill: '#8b5cf6', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[4, 4, 0, 0]}
+                        barSize={16}
+                        label={{ position: 'top', fill: '#8b5cf6', fontSize: 8, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                       <Bar 
                         dataKey="si" 
                         name="SI"
                         fill="#ec4899"
-                        radius={[8, 8, 0, 0]}
-                        barSize={20}
-                        label={{ position: 'top', fill: '#ec4899', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value * 10) / 10 }}
+                        radius={[4, 4, 0, 0]}
+                        barSize={16}
+                        label={{ position: 'top', fill: '#ec4899', fontSize: 8, fontWeight: 500, formatter: (value: any) => Number(value).toFixed(1) }}
                       />
                       <Bar 
                         dataKey="tbt" 
                         name="TBT"
                         fill="#f59e0b"
-                        radius={[8, 8, 0, 0]}
-                        barSize={20}
-                        label={{ position: 'top', fill: '#f59e0b', fontSize: 9, fontWeight: 600, formatter: (value: any) => Math.round(value) }}
+                        radius={[4, 4, 0, 0]}
+                        barSize={16}
+                        label={{ position: 'top', fill: '#f59e0b', fontSize: 8, fontWeight: 500, formatter: (value: any) => Math.round(value) }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -1022,7 +1051,6 @@ function App() {
             </div>
           </section>
 
-          {/* Page Size Scatter Analysis */}
           <section className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Page Weight Correlation Analysis</h2>
@@ -1032,15 +1060,15 @@ function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <div />
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setShowWeightLabels(s => !s)} style={{ padding: '0.35rem 0.6rem' }}>{showWeightLabels ? 'Hide labels' : 'Show labels'}</button>
-                  <button onClick={resetWeightZoom} style={{ padding: '0.35rem 0.6rem' }}>Reset zoom</button>
+                  <button onClick={() => setShowWeightLabels(s => !s)} style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}>{showWeightLabels ? 'Hide labels' : 'Show labels'}</button>
+                  <button onClick={resetWeightZoom} style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}>Reset zoom</button>
                 </div>
               </div>
 
               {/* Slider controls for Weight chart domains */}
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                 <div style={{ minWidth: 220 }}>
-                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Page size X domain: {(weightXDomain || [0,0])[0].toFixed(1)} — {(weightXDomain || [0,0])[1].toFixed(1)}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#475569' }}>Page size X domain: {(weightXDomain || [0,0])[0].toFixed(1)} — {(weightXDomain || [0,0])[1].toFixed(1)}</div>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <input type="range" min={(weightInitialDomain.current?.x?.[0] ?? 0)} max={(weightInitialDomain.current?.x?.[1] ?? 100)} step={0.1} value={(weightXDomain || [0,0])[0]} onChange={(e) => {
                       const val = Math.min(Number(e.target.value), (weightXDomain || [0,0])[1] - 0.1)
@@ -1054,7 +1082,7 @@ function App() {
                 </div>
 
                 <div style={{ minWidth: 220 }}>
-                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Score Y domain: {(weightYDomain || [0,100])[0]} — {(weightYDomain || [0,100])[1]}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#475569' }}>Score Y domain: {(weightYDomain || [0,100])[0]} — {(weightYDomain || [0,100])[1]}</div>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <input type="range" min={(weightInitialDomain.current?.y?.[0] ?? 0)} max={(weightInitialDomain.current?.y?.[1] ?? 100)} step={1} value={(weightYDomain || [0,100])[0]} onChange={(e) => {
                       const minAllowed = (weightInitialDomain.current?.y?.[0] ?? 0)
@@ -1071,38 +1099,41 @@ function App() {
                 </div>
               </div>
 
-              <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 600)}>
-                <ScatterChart margin={{ top: 40, right: 40, left: 10, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" strokeOpacity={0.7} />
+              <ResponsiveContainer width="100%" height={getChartHeight(performanceData.length, 480)}>
+                <ScatterChart margin={{ top: 30, right: 30, left: 10, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                     <XAxis 
                       type="number" 
                       dataKey="sizeMB" 
                       name="Page Size" 
                       unit="MB"
                       domain={weightXDomain || undefined}
-                      label={{ value: 'Total Page Size (MB)', position: 'insideBottom', offset: -15, style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
-                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+                      label={{ value: 'Total Page Size (MB)', position: 'insideBottom', offset: -10, style: { fontSize: 12, fill: '#1e293b', fontWeight: 600 } }}
+                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500, fontFamily: 'system-ui' }}
+                      axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                     />
                     <YAxis 
                       type="number" 
                       dataKey="score" 
                       name="Score" 
                       domain={weightYDomain || [0, 100]}
-                      label={{ value: 'Performance Score', angle: -90, position: 'insideLeft', style: { fontSize: 13, fill: '#1e293b', fontWeight: 600 } }}
-                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+                      label={{ value: 'Performance Score', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#1e293b', fontWeight: 600 } }}
+                      tick={{ fontSize: 11, fill: '#475569', fontWeight: 500, fontFamily: 'system-ui' }}
+                      axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
                     />
-                    <ZAxis type="number" dataKey="requests" range={[150, 1500]} name="Requests" />
+                    <ZAxis type="number" dataKey="requests" range={[120, 1200]} name="Requests" />
                     <Tooltip 
                       cursor={{ strokeDasharray: '3 3', stroke: '#475569' }}
                       contentStyle={{ 
                         background: '#ffffff', 
-                        border: '2px solid #e2e8f0', 
-                        borderRadius: '12px', 
-                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                        fontSize: '13px'
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '8px', 
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        fontSize: '12px',
+                        padding: '8px 12px'
                       }}
                       formatter={(value: any, name: string, props: any) => {
-                        if (name === 'Page Size') return [`${value.toFixed(1)} MB`, 'Size']
+                        if (name === 'Page Size') return [`${Number(value).toFixed(2)} MB`, 'Size']
                         if (name === 'Score') return [value, 'Score']
                         if (name === 'Requests') return [value, 'Requests']
                         if (props.payload.name) return [props.payload.name, 'Site']
@@ -1114,7 +1145,7 @@ function App() {
                           <Cell key={`cell-${index}`} fill={getIndustryColor(entry.industry)} />
                         ))}
                         {showWeightLabels ? (
-                          <LabelList dataKey="name" position="top" offset={15} style={{ fontSize: '12px', fill: '#000000', fontWeight: 800, textShadow: '0 0 4px #ffffff' }} />
+                          <LabelList dataKey="name" position="top" offset={12} style={{ fontSize: '11px', fill: '#000000', fontWeight: 700, textShadow: '0 0 4px #ffffff' }} />
                         ) : (
                           <LabelList content={renderScatterLabels} />
                         )}
@@ -1122,7 +1153,7 @@ function App() {
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
+              <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>
                 Bubble size reflects total network requests. Labels identify individual websites.
               </div>
           </section>
