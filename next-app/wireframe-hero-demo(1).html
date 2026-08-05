@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe Hero Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A2ADB;
+    --bg-deep:#081F9E;
+    --ink:#FFFFFF;
+    --line:rgba(255,255,255,0.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:'IBM Plex Mono',monospace;
+    background:var(--bg);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  #stage{
+    position:relative;
+    width:100%;
+    height:100vh;
+  }
+  canvas#gl{
+    position:absolute; inset:0; display:block; z-index:1;
+  }
+  .navbar{
+    position:absolute; top:0; left:0; right:0; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:26px 40px;
+  }
+  .logo{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;
+    letter-spacing:0.02em; display:flex; align-items:center; gap:8px;
+  }
+  .logo .dot{ width:8px; height:8px; background:var(--ink); border-radius:2px; display:inline-block; }
+  .navlinks{ display:flex; gap:34px; font-size:12.5px; opacity:0.85; }
+  .navlinks a{ color:var(--ink); text-decoration:none; }
+  .navright{ display:flex; align-items:center; gap:22px; font-size:12.5px; }
+  .navright a{ color:var(--ink); text-decoration:none; opacity:0.85; }
+  .cta-pill{
+    display:flex; align-items:center; gap:8px;
+    background:var(--ink); color:var(--bg); padding:8px 16px; border-radius:6px;
+    font-weight:500; font-family:'Space Grotesk',sans-serif; font-size:13px;
+  }
+  .hero-copy{
+    position:absolute; left:40px; bottom:64px; z-index:10; max-width:640px;
+  }
+  .hero-copy h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:600;
+    font-size:clamp(30px,4.2vw,52px); line-height:1.12; letter-spacing:-0.01em;
+  }
+  .get-in-touch{
+    margin-top:26px; display:inline-flex; align-items:center; gap:10px;
+    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:6px;
+    font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:14px;
+    text-decoration:none;
+  }
+  .scroll-hint{
+    position:absolute; right:40px; bottom:64px; z-index:10;
+    font-size:11px; letter-spacing:0.14em; opacity:0.6;
+  }
+  .badge{
+    position:absolute; top:96px; left:50%; transform:translateX(-50%);
+    z-index:5; font-size:10.5px; letter-spacing:0.1em; opacity:0.45; text-align:center;
+  }
+  .note{
+    position:fixed; bottom:0; left:0; right:0; z-index:60;
+    background:rgba(0,0,0,0.55); color:#fff; font-size:11px; padding:9px 20px;
+    display:flex; justify-content:space-between; letter-spacing:0.03em;
+  }
+  .note span{opacity:0.6;}
+  .shape-nav{
+    position:absolute; right:40px; top:50%; transform:translateY(-50%);
+    z-index:10; display:flex; flex-direction:column; gap:12px;
+  }
+  .shape-btn{
+    width:44px; height:44px; border-radius:8px;
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
+    color:var(--ink); font-family:'IBM Plex Mono',monospace; font-size:11px;
+    cursor:pointer; transition:all 0.2s; display:flex; align-items:center;
+    justify-content:center; font-weight:500;
+  }
+  .shape-btn:hover{
+    background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.4);
+  }
+  .shape-btn.active{
+    background:var(--ink); color:var(--bg); border-color:var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="gl"></canvas>
+
+  <div class="navbar">
+    <div class="logo"><span class="dot"></span>YOURCO</div>
+    <div class="navlinks">
+      <a href="#">Home</a><a href="#">Products</a><a href="#">Partners</a><a href="#">Work</a>
+    </div>
+    <div class="navright">
+      <a href="#">Careers</a><a href="#">Company</a>
+      <div class="cta-pill">Get in Touch ↗</div>
+    </div>
+  </div>
+
+  <div class="badge">LIVE WIREFRAME — ROTATES CONTINUOUSLY, RESPONDS TO CURSOR</div>
+
+  <div class="hero-copy">
+    <h1>Websites, inventory systems<br>and automation, engineered<br>to run themselves.</h1>
+    <a class="get-in-touch" href="#">Get in Touch ↗</a>
+  </div>
+
+  <div class="scroll-hint">SCROLL DOWN</div>
+
+  <div class="shape-nav">
+    <button class="shape-btn active" data-shape="0">01</button>
+    <button class="shape-btn" data-shape="1">02</button>
+    <button class="shape-btn" data-shape="2">03</button>
+    <button class="shape-btn" data-shape="3">04</button>
+    <button class="shape-btn" data-shape="4">05</button>
+  </div>
+</div>
+
+<div class="note">
+  <span>wireframe-hero-demo.html</span>
+  <span>drag to rotate manually · geometry swappable — see notes below</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+  const canvas = document.getElementById('gl');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 7.2);
+
+  let group = new THREE.Group();
+  group.position.x = 1.8;
+  scene.add(group);
+
+  let currentShape = 0;
+  let targetRotX = 0, targetRotY = 0;
+  let mouseX = 0, mouseY = 0;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Design 1: Torus Knot
+  function createShape0() {
+    const g = new THREE.Group();
+    const torusGeo = new THREE.TorusKnotGeometry(1.4, 0.4, 100, 16);
+    const wireGeo = new THREE.WireframeGeometry(torusGeo);
+    const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 });
+    g.add(new THREE.LineSegments(wireGeo, wireMat));
+    const sphereGeo = new THREE.SphereGeometry(0.8, 16, 12);
+    const sphereWireGeo = new THREE.WireframeGeometry(sphereGeo);
+    const sphereWireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+    g.add(new THREE.LineSegments(sphereWireGeo, sphereWireMat));
+    g.add(new THREE.Points(torusGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.04, transparent: true, opacity: 0.8 })));
+    return g;
+  }
+
+  // Design 2: Dodecahedron
+  function createShape1() {
+    const g = new THREE.Group();
+    const geo = new THREE.DodecahedronGeometry(1.8, 0);
+    const wireGeo = new THREE.WireframeGeometry(geo);
+    const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    g.add(new THREE.LineSegments(wireGeo, wireMat));
+    g.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.9 })));
+    return g;
+  }
+
+  // Design 3: Octahedron with rings
+  function createShape2() {
+    const g = new THREE.Group();
+    const octaGeo = new THREE.OctahedronGeometry(1.6, 1);
+    const wireGeo = new THREE.WireframeGeometry(octaGeo);
+    g.add(new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 })));
+    const torusGeo = new THREE.TorusGeometry(2.2, 0.08, 8, 24);
+    const torusWire = new THREE.WireframeGeometry(torusGeo);
+    g.add(new THREE.LineSegments(torusWire, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 })));
+    g.add(new THREE.Points(octaGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.85 })));
+    return g;
+  }
+
+  // Design 4: Tetrahedron cluster
+  function createShape3() {
+    const g = new THREE.Group();
+    const tetraGeo = new THREE.TetrahedronGeometry(1.4, 1);
+    const wireGeo = new THREE.WireframeGeometry(tetraGeo);
+    for(let i = 0; i < 3; i++) {
+      const wire = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 - i * 0.15 }));
+      wire.scale.setScalar(1 + i * 0.4);
+      wire.rotation.y = i * Math.PI / 3;
+      g.add(wire);
+    }
+    g.add(new THREE.Points(tetraGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.9 })));
+    return g;
+  }
+
+  // Design 5: Icosahedron double shell
+  function createShape4() {
+    const g = new THREE.Group();
+    const icoGeo = new THREE.IcosahedronGeometry(1.5, 1);
+    const wireGeo = new THREE.WireframeGeometry(icoGeo);
+    g.add(new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })));
+    const icoGeo2 = new THREE.IcosahedronGeometry(2.2, 1);
+    const wireGeo2 = new THREE.WireframeGeometry(icoGeo2);
+    g.add(new THREE.LineSegments(wireGeo2, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 })));
+    g.add(new THREE.Points(icoGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.045, transparent: true, opacity: 0.9 })));
+    return g;
+  }
+
+  const shapes = [createShape0, createShape1, createShape2, createShape3, createShape4];
+
+  function loadShape(index) {
+    while(group.children.length) group.remove(group.children[0]);
+    const shape = shapes[index]();
+    shape.children.forEach(child => group.add(child));
+    currentShape = index;
+    document.querySelectorAll('.shape-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === index);
+    });
+  }
+
+  loadShape(0);
+
+  document.querySelectorAll('.shape-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadShape(parseInt(btn.dataset.shape));
+    });
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!prefersReduced) {
+      t += 0.0022;
+      group.rotation.y += 0.0028;
+      group.rotation.x = Math.sin(t) * 0.08;
+    }
+    targetRotX += (mouseY * 0.25 - targetRotX) * 0.04;
+    targetRotY += (mouseX * 0.25 - targetRotY) * 0.04;
+    group.rotation.x += targetRotX * 0.02;
+    group.rotation.y += targetRotY * 0.02;
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
+</body>
+</html>
