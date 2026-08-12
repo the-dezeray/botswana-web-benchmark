@@ -9,8 +9,9 @@ export const loadShorthand = async (): Promise<Record<string, string>> => {
   
   try {
     const response = await fetch('/shorthand.json');
-    shorthandMap = await response.json();
-    return shorthandMap;
+    const data: Record<string, string> = await response.json();
+    shorthandMap = data;
+    return data;
   } catch (error) {
     console.error('Failed to load shorthand.json:', error);
     return {};

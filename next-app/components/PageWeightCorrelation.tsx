@@ -49,23 +49,23 @@ export default function PageWeightCorrelation() {
 
   if (loading) {
     return (
-      <div className="w-full py-12 text-center text-xs font-mono text-[#0A2ADB]/70">
+      <div className="w-full py-12 text-center text-xs font-mono /70">
         Loading Page Weight Correlation Analysis...
       </div>
     );
   }
 
   return (
-    <section id="page-weight-correlation" className="w-full bg-white text-slate-900 border-t border-[#0A2ADB]/10">
+    <section id="page-weight-correlation" className="w-full  border-t border-[#0A2ADB]/10">
       <div className="w-full max-w-[98vw] mx-auto px-3 sm:px-6 py-12 space-y-6">
         
         {/* Section Header */}
         <div className="border-b border-[#0A2ADB]/15 pb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10 text-[#0A2ADB] rounded-full text-xs font-mono font-medium mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10  rounded-full text-xs font-mono font-medium mb-2">
             <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             CORRELATION MATRIX
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0A2ADB]">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
             Page Weight Correlation Analysis
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
@@ -74,13 +74,13 @@ export default function PageWeightCorrelation() {
         </div>
 
         {/* Scatter / Bubble Plot */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-3">
+        <div className="rounded-2xl p-4 sm:p-6   space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-3">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-white tracking-tight">
                 Relationship between Page Size, Performance Score, and Request Volume
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 X-Axis: Page Size (MB) • Y-Axis: Performance Score • Circle Radius: Total HTTP Requests
               </p>
             </div>
@@ -117,9 +117,9 @@ export default function PageWeightCorrelation() {
                   dataKey="score"
                   name="Performance Score"
                   domain={[0, 100]}
-                  stroke="#64748B"
+                  stroke="#e2e3e5"
                   fontSize={11}
-                  label={{ value: "Performance Score (0-100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#64748B" }}
+                  label={{ value: "Performance Score (0-100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#ffffff" }}
                 />
                 <ZAxis
                   type="number"
@@ -133,7 +133,7 @@ export default function PageWeightCorrelation() {
                     if (active && payload && payload.length) {
                       const d: PageWeightCorrelationItem = payload[0].payload;
                       return (
-                        <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-xl border border-slate-800 text-xs font-mono space-y-1.5">
+                        <div className=" text-white p-3.5 rounded-xl shadow-xl border border-slate-800 text-xs font-mono space-y-1.5 bg-[#1D1D1F]">
                           <div className="font-bold text-white text-sm pb-1 border-b border-slate-700">{d.name}</div>
                           <div className="flex justify-between gap-4">
                             <span>Performance Score:</span>

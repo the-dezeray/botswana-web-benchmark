@@ -50,7 +50,7 @@ export default function CoreWebVitalsAnalysis() {
 
   if (loading) {
     return (
-      <div className="w-full py-12 text-center text-xs font-mono text-[#0A2ADB]/70">
+      <div className="w-full py-12 text-center text-xs font-mono /70">
         Loading Core Web Vitals Analysis...
       </div>
     );
@@ -59,16 +59,16 @@ export default function CoreWebVitalsAnalysis() {
   const chartHeight = Math.max(500, data.length * 32 + 60);
 
   return (
-    <section id="core-web-vitals" className="w-full bg-white text-slate-900 border-t border-[#0A2ADB]/10">
+    <section id="core-web-vitals" className="w-full  border-t border-[#0A2ADB]/10">
       <div className="w-full max-w-[98vw] mx-auto px-3 sm:px-6 py-12 space-y-8">
         
         {/* Section Header */}
         <div className="border-b border-[#0A2ADB]/15 pb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10 text-[#0A2ADB] rounded-full text-xs font-mono font-medium mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10  rounded-full text-xs font-mono font-medium mb-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             CORE WEB VITALS METRICS
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0A2ADB]">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
             Core Web Vitals Analysis
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
@@ -77,12 +77,12 @@ export default function CoreWebVitalsAnalysis() {
         </div>
 
         {/* Chart 1: LCP & FCP (seconds) 2 Bars for each */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div className="rounded-2xl p-4 sm:p-6   space-y-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900">
-              LCP & FCP Comparison (seconds)
+            <h3 className="text-base font-bold text-white tracking-tight">
+              LCP &amp; FCP Comparison (seconds)
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
               Two bars for each audited site comparing Largest Contentful Paint vs First Contentful Paint (Lower seconds = Faster performance).
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function CoreWebVitalsAnalysis() {
               <BarChart
                 data={data}
                 layout="vertical"
-                margin={{ top: 10, right: 30, left: 140, bottom: 20 }}
+                margin={{ top: 10, right: 30, left: 10, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
                 <XAxis
@@ -114,7 +114,7 @@ export default function CoreWebVitalsAnalysis() {
                         x={-6}
                         y={4}
                         textAnchor="end"
-                        fill="#1E293B"
+                        fill="#ecf1f3"
                         className="font-sans text-[11px] font-medium"
                       >
                         {payload.value.length > 20 ? payload.value.slice(0, 18) + "…" : payload.value}
@@ -128,7 +128,7 @@ export default function CoreWebVitalsAnalysis() {
                     if (active && payload && payload.length) {
                       const d: LcpFcpItem = payload[0].payload;
                       return (
-                        <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[190px]">
+                        <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[190px] bg-[#1D1D1F]">
                           <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
                           <div className="flex justify-between text-slate-300">
                             <span className="text-[#3B82F6]">LCP:</span>
@@ -153,20 +153,20 @@ export default function CoreWebVitalsAnalysis() {
                   align="right"
                   wrapperStyle={{ paddingBottom: "10px", fontSize: "12px", fontFamily: "monospace" }}
                 />
-                <Bar dataKey="lcp" name="LCP (Largest Contentful Paint)" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={10} />
-                <Bar dataKey="fcp" name="FCP (First Contentful Paint)" fill="#10B981" radius={[0, 4, 4, 0]} barSize={10} />
+                <Bar dataKey="lcp" name="LCP (Largest Contentful Paint)" fill="#3B82F6" radius={[0, 6, 6, 0]} barSize={10} />
+                <Bar dataKey="fcp" name="FCP (First Contentful Paint)" fill="#10B981" radius={[0, 6, 6, 0]} barSize={10} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Chart 2: Performance vs LCP Correlation */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div className="rounded-2xl p-4 sm:p-6   space-y-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-bold text-white tracking-tight">
               Performance vs LCP Correlation
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
               Scatter plot displaying how LCP load time directly correlates with overall Lighthouse Performance Score.
             </p>
           </div>
@@ -200,7 +200,7 @@ export default function CoreWebVitalsAnalysis() {
                     if (active && payload && payload.length) {
                       const d: LcpFcpItem = payload[0].payload;
                       return (
-                        <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1">
+                        <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 bg-[#1D1D1F]">
                           <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
                           <div>Performance Score: <span className="text-emerald-400 font-bold">{d.score} / 100</span></div>
                           <div>LCP Time: <span className="text-sky-400 font-bold">{d.lcp} s</span></div>

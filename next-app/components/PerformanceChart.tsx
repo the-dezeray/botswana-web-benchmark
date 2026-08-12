@@ -118,7 +118,7 @@ export default function PerformanceChart() {
 
   if (loading) {
     return (
-      <div className="w-full py-12 text-center text-xs font-mono text-[#0A2ADB]/70">
+      <div className="w-full py-12 text-center text-xs font-mono /70">
         Loading Performance Audit Rankings...
       </div>
     );
@@ -135,7 +135,7 @@ export default function PerformanceChart() {
   const verticalChartHeight = Math.max(500, filteredData.length * 28 + 60);
 
   return (
-    <section id="performance-chart" className="w-full bg-white text-slate-900 border-t border-[#0A2ADB]/10">
+    <section id="performance-chart" className="w-full  border-t border-[#0A2ADB]/10">
       <div className={`w-full mx-auto px-3 sm:px-6 py-12 space-y-6 transition-all duration-300 ${
         widthMode === "full" ? "max-w-[98vw]" : widthMode === "ultra" ? "max-w-[100vw]" : "max-w-7xl"
       }`}>
@@ -143,11 +143,11 @@ export default function PerformanceChart() {
         {/* Header */}
         <div className="border-b border-[#0A2ADB]/15 pb-4 flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10 text-[#0A2ADB] rounded-full text-xs font-mono font-medium mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10  rounded-full text-xs font-mono font-medium mb-2">
               <span className="w-2 h-2 rounded-full bg-[#0A2ADB]"></span>
               RANKED AUDIT BENCHMARK
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0A2ADB]">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
               Performance Score by Site
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
@@ -157,7 +157,7 @@ export default function PerformanceChart() {
         </div>
 
         {/* Data Chart */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-5 shadow-sm overflow-hidden">
+        <div className="rounded-2xl p-4 sm:p-6   overflow-hidden">
           {orientation === "horizontal" ? (
             /* Horizontal X-Axis Layout (Vertical Columns) */
             <div className="w-full overflow-x-auto">
@@ -188,7 +188,7 @@ export default function PerformanceChart() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                     <XAxis
                       dataKey="name"
-                      stroke="#475569"
+                      stroke="#64748B"
                       fontSize={9}
                       interval={0}
                       tick={({ x, y, payload }) => {
@@ -200,7 +200,7 @@ export default function PerformanceChart() {
                               y={0}
                               dy={12}
                               textAnchor="end"
-                              fill="#475569"
+                              fill="#CBD5E1"
                               fontSize={9}
                               transform="rotate(-50)"
                             >
@@ -215,8 +215,9 @@ export default function PerformanceChart() {
                       domain={[0, 100]}
                       stroke="#64748B"
                       fontSize={11}
+                      tick={{ fill: "#94A3B8" }}
                       tickFormatter={(val) => `${val}`}
-                      label={{ value: "Score (0–100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#64748B" }}
+                      label={{ value: "Score (0–100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#94A3B8" }}
                     />
                     <Tooltip
                       cursor={{ fill: "rgba(10, 42, 219, 0.04)" }}
@@ -227,7 +228,7 @@ export default function PerformanceChart() {
                           const barColor = COLOR_PALETTE[idx % COLOR_PALETTE.length];
 
                           return (
-                            <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px]">
+                            <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px] bg-[#1D1D1F]">
                               <div className="flex items-center gap-2 pb-1 border-b border-slate-700">
                                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: barColor }} />
                                 <span className="font-bold text-white truncate max-w-[170px]">{d.name}</span>
@@ -263,7 +264,7 @@ export default function PerformanceChart() {
                           dataKey="score"
                           position="top"
                           formatter={(val: any) => (typeof val === "number" ? Math.round(val) : val)}
-                          style={{ fontSize: "10px", fontFamily: "monospace", fill: "#0A2ADB", fontWeight: "bold" }}
+                          style={{ fontSize: "10px", fontFamily: "monospace", fill: "#F1F5F9", fontWeight: "bold" }}
                         />
                       )}
                       {filteredData.map((entry, idx) => {
@@ -313,7 +314,7 @@ export default function PerformanceChart() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    stroke="#334155"
+                    stroke="#f6f8fa"
                     fontSize={11}
                     width={135}
                     tickLine={false}
@@ -325,8 +326,10 @@ export default function PerformanceChart() {
                             x={-6}
                             y={4}
                             textAnchor="end"
-                            fill="#1E293B"
-                            className="font-sans text-[11px] font-medium"
+                            fill="#df6311"
+                            fontSize={11}
+                            fontFamily="sans-serif"
+                            fontWeight="500"
                           >
                             {item ? `#${item.rank} ` : ""}{payload.value.length > 20 ? payload.value.slice(0, 18) + "…" : payload.value}
                           </text>
@@ -343,7 +346,7 @@ export default function PerformanceChart() {
                         const barColor = COLOR_PALETTE[idx % COLOR_PALETTE.length];
 
                         return (
-                          <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px]">
+                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px] bg-[#1D1D1F]">
                             <div className="flex items-center gap-2 pb-1 border-b border-slate-700">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: barColor }} />
                               <span className="font-bold text-white truncate max-w-[170px]">{d.name}</span>
@@ -380,7 +383,7 @@ export default function PerformanceChart() {
                         dataKey="score"
                         position="right"
                         formatter={(val: any) => (typeof val === "number" ? Math.round(val) : val)}
-                        style={{ fontSize: "10px", fontFamily: "monospace", fill: "#0A2ADB", fontWeight: "bold" }}
+                        style={{ fontSize: "10px", fontFamily: "monospace", fill: "#F1F5F9", fontWeight: "bold" }}
                       />
                     )}
                     {filteredData.map((entry, idx) => {

@@ -11,6 +11,8 @@ import { Circles } from 'react-loader-spinner'
 import { NextAuditTimer } from './NextAuditTimer'
 import { AnimatedNumber } from './components/core/animated-number'
 import { TextScramble } from './components/core/text-scramble'
+import { FloatingSidebar } from './components/FloatingSidebar'
+import { Landing } from './components/Landing'
 
 interface LighthouseMetrics {
   performanceScore: number
@@ -411,7 +413,14 @@ function App() {
   if (!data) return <div className="error">No data available</div>
 
   return (
-    <div className="dash">
+    <>
+      {/* Landing Section */}
+      <Landing />
+      
+      <div className="dash">
+      {/* Floating Sidebar */}
+      <FloatingSidebar />
+      
       {/* SVG Pattern Definitions */}
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
@@ -547,7 +556,7 @@ function App() {
       {viewMode === 'overview' && (
         <>
           {/* Performance Overview */}
-          <section className="chart-section">
+          <section id="performance" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Performance Score by Site</h2>
             </div>
@@ -597,7 +606,7 @@ function App() {
           </section>
 
           {/* Industry Comparison */}
-          <section className="chart-section">
+          <section id="industry" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Industry Performance Comparison</h2>
             </div>
@@ -646,7 +655,7 @@ function App() {
           </section>
 
           {/* Core Web Vitals */}
-          <section className="chart-section">
+          <section id="web-vitals" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Core Web Vitals Analysis</h2>
             </div>
@@ -808,7 +817,7 @@ function App() {
           </section>
 
           {/* Size Metrics Bar Graph */}
-          <section className="chart-section">
+          <section id="page-size" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Page Size Analysis</h2>
             </div>
@@ -925,7 +934,7 @@ function App() {
           </section>
 
           {/* Time Metrics Bar Graph */}
-          <section className="chart-section">
+          <section id="load-time" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Load Time Analysis</h2>
             </div>
@@ -1051,7 +1060,7 @@ function App() {
             </div>
           </section>
 
-          <section className="chart-section">
+          <section id="correlation" className="chart-section">
             <div className="section-header">
               <h2 className="section-label">Page Weight Correlation Analysis</h2>
               <p className="section-description">Relationship between Page Size, Performance Score, and Request Volume</p>
@@ -1508,6 +1517,7 @@ function App() {
         <p>Methodology: {data.meta.methodology} · Outlier detection: {data.meta.outlier_method}</p>
       </footer>
     </div>
+    </>
   )
 }
 

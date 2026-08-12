@@ -1,8 +1,17 @@
 {
-  "name": "bw-web-performance-auditor",
+  "name": "bw-site-metrics",
   "version": "1.0.0",
   "description": "Web performance auditor for Botswana company websites",
-  "main": "audit.js",
+  "main": "audit-resumable.js",
+  "bin": {
+    "bw-site-metrics": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "audit-resumable.js",
+    "audit-zero-scores.js",
+    "sites.json"
+  ],
   "scripts": {
     "audit": "node audit.js --sites sites.json --runs 3 --out results.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
     "audit:5runs": "node audit.js --sites sites.json --runs 5 --out results.json --chrome-path /root/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",

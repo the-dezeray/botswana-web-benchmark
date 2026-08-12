@@ -48,7 +48,7 @@ export default function StatsCard() {
             <div className={`text-white text-[28px] font-bold leading-tight mb-1 ${spaceGrotesk.className}`}>
               BA ISAGO
             </div>
-            <div className={`text-[#0A2ADB] text-[20px] font-semibold ${ibmPlexMono.className}`}>
+            <div className={` text-[20px] font-semibold ${ibmPlexMono.className}`}>
               66.67<span className="text-white/40 text-[16px]">/100</span>
             </div>
             <div className="h-1 w-16 bg-gradient-to-r from-[#0A2ADB] to-[#0A2ADB]/40 mx-auto lg:mx-0 mt-3"></div>

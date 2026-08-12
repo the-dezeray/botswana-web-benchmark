@@ -1,23 +1,17 @@
 'use client'
 
-import { useState } from 'react'
-import { Zap, Heart, Package, Timer, TrendingUp, Settings, Maximize2, LayoutGrid, Image, Type } from 'lucide-react'
-import './FloatingSidebar.css'
+import { Zap, Heart, Package, Timer, TrendingUp, BarChart2 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { id: 'performance-chart', label: 'Performance', icon: Zap },
   { id: 'core-web-vitals', label: 'Web Vitals', icon: Heart },
   { id: 'page-size-requests', label: 'Page Size', icon: Package },
   { id: 'tti-si-tbt', label: 'Load Time', icon: Timer },
-  { id: 'page-weight-correlation', label: 'Correlation', icon: TrendingUp }
+  { id: 'page-weight-correlation', label: 'Correlation', icon: TrendingUp },
+  { id: 'size-speed-ranking', label: 'Rankings', icon: BarChart2 }
 ]
 
 export function FloatingSidebar() {
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [layoutOrientation, setLayoutOrientation] = useState<'horizontal' | 'vertical'>('vertical')
-  const [showTexture, setShowTexture] = useState(true)
-  const [showLabels, setShowLabels] = useState(true)
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
@@ -25,87 +19,31 @@ export function FloatingSidebar() {
     }
   }
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setIsFullscreen(true)
-    } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
-    }
-  }
-
-  const toggleOrientation = () => {
-    setLayoutOrientation(prev => prev === 'vertical' ? 'horizontal' : 'vertical')
-  }
+  const itemBaseClassName = 
+    'group/item flex w-full items-center  rounded-lg  py-1 text-left text-xs font-normal tracking-tight text-slate-200 transition-all duration-200 ease-out hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+  
+  // Removed background, cyan tint, and gradients — pure white text/icon styling
+  const iconBaseClassName = 
+    'flex h-7 w-7 shrink-0 items-center justify-center text-white/80 transition-colors duration-200 group-hover/item:text-white'
 
   return (
-    <div className="floating-sidebar">
-      {/* Settings Section */}
-      <div className="settings-section">
-        <button
-          className="settings-item"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        >
-          <span className="settings-icon">
-            <Maximize2 size={18} />
-          </span>
-          <span className="settings-label">Fullscreen</span>
-        </button>
-
-        <button
-          className={`settings-item ${layoutOrientation === 'horizontal' ? 'active' : ''}`}
-          onClick={toggleOrientation}
-          title={`Layout: ${layoutOrientation}`}
-        >
-          <span className="settings-icon">
-            <LayoutGrid size={18} />
-          </span>
-          <span className="settings-label">{layoutOrientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
-        </button>
-
-        <button
-          className={`settings-item ${showTexture ? 'active' : ''}`}
-          onClick={() => setShowTexture(!showTexture)}
-          title={showTexture ? "Hide Texture" : "Show Texture"}
-        >
-          <span className="settings-icon">
-            <Image size={18} />
-          </span>
-          <span className="settings-label">Texture</span>
-        </button>
-
-        <button
-          className={`settings-item ${showLabels ? 'active' : ''}`}
-          onClick={() => setShowLabels(!showLabels)}
-          title={showLabels ? "Hide Labels" : "Show Labels"}
-        >
-          <span className="settings-icon">
-            <Type size={18} />
-          </span>
-          <span className="settings-label">Labels</span>
-        </button>
-      </div>
-
-      {/* Divider */}
-      <div className="sidebar-divider"></div>
-
-      {/* Navigation Section */}
-      <nav className="nav-list">
+    <div className="group/sidebar bg-neutral-950 fixed bottom-4 right-4 z-50 flex max-h-[calc(100vh-2rem)] w-11 flex-col items-end overflow-hidden rounded-xl p-1 backdrop-blur-md transition-all duration-300 ease-in-out hover:w-48 hover:p-1.5 sm:bottom-6 sm:right-6 border border-white/10 shadow-lg">
+      <nav className="flex w-full flex-col ">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           return (
             <button
               key={item.id}
-              className="nav-item"
+              className={itemBaseClassName}
               onClick={() => scrollToSection(item.id)}
               title={item.label}
             >
-              <span className="nav-icon">
-                <Icon size={20} />
+              <span className={iconBaseClassName}>
+                <Icon size={16} />
               </span>
-              <span className="nav-label">{item.label}</span>
+              <span className="min-w-0 flex-1 truncate text-[12px] font-light opacity-0 transition-opacity duration-200 group-hover/sidebar:opacity-100">
+                {item.label}
+              </span>
             </button>
           )
         })}

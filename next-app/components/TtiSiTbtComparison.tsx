@@ -52,7 +52,7 @@ export default function TtiSiTbtComparison() {
 
   if (loading) {
     return (
-      <div className="w-full py-12 text-center text-xs font-mono text-[#0A2ADB]/70">
+      <div className="w-full py-12 text-center text-xs font-mono /70">
         Loading TTI, Speed Index &amp; TBT Comparison...
       </div>
     );
@@ -68,7 +68,7 @@ export default function TtiSiTbtComparison() {
           y={0}
           dy={12}
           textAnchor="end"
-          fill="#475569"
+          fill="#f5eff4"
           fontSize={9}
           transform="rotate(-50)"
         >
@@ -79,16 +79,16 @@ export default function TtiSiTbtComparison() {
   };
 
   return (
-    <section id="tti-si-tbt" className="w-full bg-white text-slate-900 border-t border-[#0A2ADB]/10">
+    <section id="tti-si-tbt" className="w-full  border-t border-[#0A2ADB]/10">
       <div className="w-full max-w-[98vw] mx-auto px-3 sm:px-6 py-12 space-y-6">
 
         {/* Section Header */}
         <div className="border-b border-[#0A2ADB]/15 pb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10 text-[#0A2ADB] rounded-full text-xs font-mono font-medium mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0A2ADB]/10  rounded-full text-xs font-mono font-medium mb-2">
             <span className="w-2 h-2 rounded-full bg-rose-500"></span>
             INTERACTIVITY &amp; SPEED TIMINGS
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0A2ADB]">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
             TTI / SI / TBT Comparison
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
@@ -97,17 +97,17 @@ export default function TtiSiTbtComparison() {
         </div>
 
         {/* Chart 1: TTI & SI (Seconds) — Stacked / Grouped Layout matching Requests & 3rd Party Ratio */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="rounded-2xl p-4 sm:p-6   space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-white tracking-tight">
                 1. Time to Interactive (TTI) &amp; Speed Index (SI)
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 TTI measures when a page becomes fully interactive; SI measures how quickly content is visually displayed. (Lower = Faster)
               </p>
             </div>
-            <span className="shrink-0 px-2 py-0.5 bg-slate-100 text-slate-700 font-mono text-[10px] rounded border border-slate-200">
+            <span className="shrink-0 px-2.5 py-1 bg-slate-800/80 text-slate-300 font-mono text-[10px] rounded-full border border-slate-700/60 font-semibold">
               Scale: Seconds (s)
             </span>
           </div>
@@ -143,7 +143,7 @@ export default function TtiSiTbtComparison() {
                       if (active && payload && payload.length) {
                         const d: TtiSiTbtItem = payload[0].payload;
                         return (
-                          <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px]">
+                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px] bg-[#1D1D1F]">
                             <div className="font-bold text-white pb-1 border-b border-slate-700 truncate">{d.name}</div>
                             <div className="flex justify-between gap-4 text-slate-300">
                               <span className="text-indigo-400">TTI (Interactive):</span>
@@ -177,17 +177,17 @@ export default function TtiSiTbtComparison() {
         </div>
 
         {/* Chart 2: TBT (Milliseconds) — Ranked by TBT, Reverse Diagonal Hatch & Grown Logarithmic Y-Axis */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="rounded-2xl p-4 sm:p-6   space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-white tracking-tight">
                 2. Total Blocking Time (TBT) — Ranked
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 Ranked breakdown of total main thread blocking time (ms) between FCP and TTI. (Lower = Better)
               </p>
             </div>
-            <span className="shrink-0 px-2 py-0.5 bg-rose-50 text-rose-700 font-mono text-[10px] rounded border border-rose-200 font-semibold">
+            <span className="shrink-0 px-2.5 py-1 bg-rose-500/10 text-rose-300 font-mono text-[10px] rounded-full border border-rose-500/20 font-semibold">
               Scale: Logarithmic Milliseconds (ms)
             </span>
           </div>
@@ -239,7 +239,7 @@ export default function TtiSiTbtComparison() {
                       if (active && payload && payload.length) {
                         const d: TtiSiTbtItem = payload[0].payload;
                         return (
-                          <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px]">
+                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px] bg-[#1D1D1F]">
                             <div className="font-bold text-white pb-1 border-b border-slate-700 truncate">{d.name}</div>
                             <div className="flex justify-between gap-4 text-slate-300">
                               <span className="text-rose-400">TBT:</span>
