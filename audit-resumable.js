@@ -19,7 +19,9 @@ async function getChromeLauncher() {
 const fs   = require("fs");
 const os   = require("os");
 const path = require("path");
+const readline = require("readline");
 const { parseArgs } = require("util");
+const { uploadRun } = require("./lib/upload");
 
 async function getLighthouse() {
   const { default: lighthouse } = await import("lighthouse");
@@ -34,6 +36,8 @@ const { values: args } = parseArgs({
     out:           { type: "string", default: "results.json" },
     concurrency:   { type: "string", default: "1" },
     "chrome-path": { type: "string", default: "" },
+    upload:        { type: "boolean", default: false },
+    "no-upload":   { type: "boolean", default: false },
   },
 });
 
@@ -334,8 +338,42 @@ function printSummaryTable(results) {
   console.log("└──────────────────────────┴───────┴──────────┴──────────────────┘\n");
 }
 
+// ─── Result sharing (opt-in, anonymous) ──────────────────────────────────────
+function envFlag(name) { return /^(1|true|yes|on)$/i.test(process.env[name] || ""); }
+
+async function askToShare() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise((resolve) =>
+    rl.question("Share anonymous results to improve the report (no personal data)? [Y/n] ", resolve)
+  );
+  rl.close();
+  const a = String(answer).trim().toLowerCase();
+  return a === "" || a === "y" || a === "yes";
+}
+
+async function maybeShare(output) {
+  if (args["no-upload"] || envFlag("BW_NO_UPLOAD")) return;
+  let share = args.upload || envFlag("BW_UPLOAD");
+  try {
+    if (!share && process.stdin.isTTY && process.stdout.isTTY) share = await askToShare();
+  } catch { share = false; }
+  if (!share) {
+    console.log("Results kept local. Re-run with --upload to share them anytime.\n");
+    return;
+  }
+
+  console.log("⬆  Sharing anonymous results…");
+  try {
+    const runId = await uploadRun(output);
+    console.log(`✓ Shared. Run id: ${runId}\n`);
+  } catch (e) {
+    console.warn(`⚠  Could not share results (${e.message}). Local results are unaffected.\n`);
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
+  const startedAt = Date.now();
   if (!fs.existsSync(SITES_FILE)) {
     console.error(`✗ Sites file not found: ${SITES_FILE}`); process.exit(1);
   }
@@ -398,9 +436,20 @@ async function main() {
     });
   }
 
+  const elapsedSeconds = round((Date.now() - startedAt) / 1000, 1);
+  const mins = Math.floor(elapsedSeconds / 60);
+  const secs = +(elapsedSeconds % 60).toFixed(1);
+
   printSummaryTable(sites.map((s) => resultsMap[s.url]).filter(Boolean));
   saveResults(OUT_FILE, sites, resultsMap);
-  console.log(`\n✅ Audit complete. Results saved to ${OUT_FILE}\n`);
+  console.log(`\n✅ Audit complete in ${mins ? `${mins}m ` : ""}${secs}s. Results saved to ${OUT_FILE}`);
+
+  const ordered = sites.map((s) => resultsMap[s.url]).filter(Boolean);
+  await maybeShare({
+    meta: { ...buildMeta(sites.length, NUM_RUNS), duration_seconds: elapsedSeconds },
+    summary: buildSummary(ordered),
+    results: ordered,
+  });
 }
 
 main().catch((e) => { console.error("Fatal:", e); process.exit(1); });

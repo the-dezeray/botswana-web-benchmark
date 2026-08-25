@@ -16,8 +16,17 @@ Commands:
   view    View results (placeholder - implement later)
   help    Show this help message
 
+Sharing options (run):
+  --upload      Share anonymous results without prompting
+  --no-upload   Never share / skip the prompt
+
+Environment:
+  BW_UPLOAD=1 / BW_NO_UPLOAD=1        Same as the flags above
+  SUPABASE_URL / SUPABASE_ANON_KEY    Override built-in endpoints
+
 Examples:
   npx bw-site-metrics run --sites sites.json --runs 3 --out results.json
+  npx bw-site-metrics run --upload
   npx bw-site-metrics view --file results.json
 `);
   process.exit(0);
