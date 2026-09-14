@@ -20,7 +20,7 @@
     "audit:quick": "node audit-resumable.js --sites sites.json --runs 1 --out results_quick.json",
     "audit:quick:parallel": "node audit-resumable.js --sites sites.json --runs 1 --out results_quick.json --concurrency 3",
     "audit:quick:playwright": "bash ./run_quick_audit.sh",
-   "audit:zero-scores": "node audit-zero-scores.js --sites sites.json --runs 1 --out results.json",
+    "audit:zero-scores": "node audit-zero-scores.js --sites sites.json --runs 1 --out results.json",
     "update-data": "node update-data.js",
     "postaudit:quick": "npm run update-data",
     "postaudit:quick:parallel": "npm run update-data"

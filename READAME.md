@@ -24,8 +24,14 @@ Alternatively, use the helper script included in the repo:
 | `audit` | `npm run audit` | Full audit, 3 runs per site |
 | `audit:5runs` | `npm run audit:5runs` | Full audit, 5 runs per site |
 | `audit:quick` | `npm run audit:quick` | Quick audit, 1 run per site |
-| `audit:quick:parallel` | `npm run audit:quick:parallel` | Quick audit, concurrency 3 |
+| `audit:quick:parallel` | `npm run audit:quick:parallel` | Quick audit, concurrent sites (3 Chrome instances) |
 | `audit:zero-scores` | `npm run audit:zero-scores` | Quick audit that re-checks zero-score sites |
+
+### Performance notes
+
+- Audits run with **simulated throttling** (`throttlingMethod: "simulate"`) for deterministic timings.
+- Each site reuses a single headless Chrome instance for all its runs; `--concurrency N` runs N sites in parallel, each with its own Chrome instance and temp profile. Tune with `--concurrency` (watch RAM: each Chrome uses ~200–400 MB).
+- Chrome launches lean: extensions, background networking, component updates, and sync are disabled.
 
 ### Notes
 

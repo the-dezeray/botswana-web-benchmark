@@ -68,21 +68,15 @@ process.on("SIGINT", () => {
 });
 process.on("SIGTERM", () => { if (!shutdownRequested) { console.log("\n⚠  SIGTERM received — finishing current site then saving…"); shutdownRequested = true; } });
 
-// ─── Lighthouse mutex (Lighthouse/chrome-launcher does not handle concurrent
-//     Chrome instances reliably, so all Lighthouse runs are serialized) ──────
-let lhMutexTail = Promise.resolve();
-function withLighthouseLock(fn) {
-  const next = lhMutexTail.then(() => fn());
-  lhMutexTail = next.catch(() => {});
-  return next;
-}
-
 // ─── Config ───────────────────────────────────────────────────────────────────
+// Concurrency is handled by the site queue in main(); each auditSite owns its
+// own Chrome instance (unique debug port + temp profile), so Lighthouse runs
+// execute in parallel across sites.
 const LIGHTHOUSE_FLAGS = {
   logLevel: "error", output: "json", onlyCategories: ["performance"],
   formFactor: "mobile",
   screenEmulation: { mobile: true, width: 360, height: 640, deviceScaleFactor: 2, disabled: false },
-  throttlingMethod: "provided",
+  throttlingMethod: "simulate",
  
 };
 
@@ -152,40 +146,58 @@ function saveResults(outFile, allSites, resultsMap) {
   fs.writeFileSync(outFile, JSON.stringify(output, null, 2));
 }
 
-// ─── Lighthouse audit (performance + network, single pass) ───────────────────
-async function runLighthouse(url) {
-  const lighthouse = await getLighthouse();
-  const tmpDir = path.join(os.homedir(), ".lh-tmp", `lh-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
-  fs.mkdirSync(tmpDir, { recursive: true });
+// ─── Chrome lifecycle (one instance shared across a site's runs, relaunched
+//     on failure — concurrent Chrome instances can flake intermittently)
+const RETRIES_PER_RUN = 3;
+const LIGHTHOUSE_CHROME_FLAGS = [
+  "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
+  "--no-first-run", "--disable-extensions", "--disable-background-networking",
+  "--disable-component-update", "--disable-default-apps", "--disable-sync",
+  "--metrics-recording-only",
+];
 
+function makeTmpDir() {
+  return path.join(os.homedir(), ".lh-tmp", `lh-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+}
+
+async function launchChrome(tmpDir) {
   const launch = await getChromeLauncher();
-  const chrome = await launch({
+  return launch({
     chromePath: CHROME_PATH || undefined,
-    chromeFlags: ["--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", `--user-data-dir=${tmpDir}`],
+    chromeFlags: [...LIGHTHOUSE_CHROME_FLAGS, `--user-data-dir=${tmpDir}`],
   });
+}
 
-  try {
-    const runnerResult = await lighthouse(url, { ...LIGHTHOUSE_FLAGS, port: chrome.port });
-    const lhr = runnerResult?.lhr ?? runnerResult;
-    if (!lhr?.categories) throw new Error("Lighthouse returned no LHR data");
+function scheduleCleanup(tmpDir) {
+  setTimeout(() => { try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ } }, 2000);
+}
 
-    const { categories: cats, audits } = lhr;
-    const perf = {
-      performanceScore: round((cats.performance?.score ?? 0) * 100, 0),
-      lcp: round((audits["largest-contentful-paint"]?.numericValue ?? 0) / 1000, 2),
-      cls: round( audits["cumulative-layout-shift"]?.numericValue  ?? 0, 3),
-      tbt: round( audits["total-blocking-time"]?.numericValue      ?? 0, 0),
-      fcp: round((audits["first-contentful-paint"]?.numericValue   ?? 0) / 1000, 2),
-      si:  round((audits["speed-index"]?.numericValue              ?? 0) / 1000, 2),
-      tti: round((audits["interactive"]?.numericValue              ?? 0) / 1000, 2),
-    };
+// ─── Lighthouse audit (performance + network, single pass) ───────────────────
+async function runLighthouse(url, chrome) {
+  const lighthouse = await getLighthouse();
+  const runnerResult = await lighthouse(url, { ...LIGHTHOUSE_FLAGS, port: chrome.port });
+  const lhr = runnerResult?.lhr ?? runnerResult;
+  if (!lhr?.categories) throw new Error("Lighthouse returned no LHR data");
 
-    const network = extractNetworkData(lhr, url);
-    return { perf, network };
-  } finally {
-    try { await chrome.kill(); } catch { /* ignore */ }
-    setTimeout(() => { try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ } }, 2000);
+  const { categories: cats, audits } = lhr;
+  const perf = {
+    performanceScore: round((cats.performance?.score ?? 0) * 100, 0),
+    lcp: round((audits["largest-contentful-paint"]?.numericValue ?? 0) / 1000, 2),
+    cls: round( audits["cumulative-layout-shift"]?.numericValue  ?? 0, 3),
+    tbt: round( audits["total-blocking-time"]?.numericValue      ?? 0, 0),
+    fcp: round((audits["first-contentful-paint"]?.numericValue   ?? 0) / 1000, 2),
+    si:  round((audits["speed-index"]?.numericValue              ?? 0) / 1000, 2),
+    tti: round((audits["interactive"]?.numericValue              ?? 0) / 1000, 2),
+  };
+
+  const network = extractNetworkData(lhr, url);
+  // A healthy page always produces ≥1 network request (its document). Zero
+  // requests means Lighthouse's gatherer failed (concurrent-instance flake,
+  // blocked bot, or broken LHR) — treat it as a failed run, not a score of 0.
+  if (!(network.totalRequests > 0)) {
+    throw new Error(`Lighthouse returned a degenerate LHR (0 network requests) for ${url}`);
   }
+  return { perf, network };
 }
 
 // Pull byte/request breakdown out of Lighthouse's network-requests audit
@@ -249,18 +261,42 @@ async function auditSite(site) {
   console.log(`\n▶  ${name} (${url})`);
 
   const perfTrials = [], networkTrials = [];
+  let tmpDir = makeTmpDir();
+  fs.mkdirSync(tmpDir, { recursive: true });
+  let chrome = await launchChrome(tmpDir);
 
-  for (let i = 1; i <= NUM_RUNS; i++) {
-    console.log(`   Run ${i}/${NUM_RUNS}…`);
-    try {
-      const { perf, network } = await withLighthouseLock(() => runLighthouse(url));
-      perfTrials.push(perf);
-      networkTrials.push(network);
-      console.log(`     Score: ${perf.performanceScore}  LCP: ${perf.lcp ?? "n/a"}s  TBT: ${perf.tbt ?? "n/a"}ms  |  ${network.totalSizeKB} KB / ${network.totalRequests} reqs`);
-    } catch (e) {
-      console.warn(`     ✗ Lighthouse run failed: ${e.message}`);
+  try {
+    for (let i = 1; i <= NUM_RUNS; i++) {
+      console.log(`   Run ${i}/${NUM_RUNS}…`);
+      let ok = false;
+      for (let attempt = 1; attempt <= RETRIES_PER_RUN && !ok; attempt++) {
+        try {
+          const { perf, network } = await runLighthouse(url, chrome);
+          perfTrials.push(perf);
+          networkTrials.push(network);
+          console.log(`     Score: ${perf.performanceScore}  LCP: ${perf.lcp ?? "n/a"}s  TBT: ${perf.tbt ?? "n/a"}ms  |  ${network.totalSizeKB} KB / ${network.totalRequests} reqs`);
+          ok = true;
+        } catch (e) {
+          console.warn(`     ✗ Lighthouse run failed: ${e.message}${attempt < RETRIES_PER_RUN ? " (retrying with a fresh Chrome)" : ""}`);
+          if (attempt < RETRIES_PER_RUN) {
+            try { await chrome.kill(); } catch { /* ignore */ }
+            scheduleCleanup(tmpDir);
+            tmpDir = makeTmpDir();
+            fs.mkdirSync(tmpDir, { recursive: true });
+            chrome = await launchChrome(tmpDir);
+          }
+        }
+      }
+      if (i < NUM_RUNS) await new Promise((r) => setTimeout(r, 2000));
     }
-    if (i < NUM_RUNS) await new Promise((r) => setTimeout(r, 2000));
+  } finally {
+    try { await chrome.kill(); } catch { /* ignore */ }
+    scheduleCleanup(tmpDir);
+  }
+
+  if (!perfTrials.length) {
+    console.warn(`   ⚠ No successful Lighthouse run for ${name} — not saving so it retries next time.`);
+    return null;
   }
 
   const perfKeys = ["performanceScore", "lcp", "cls", "tbt", "fcp", "si", "tti"];
@@ -301,7 +337,7 @@ function buildMeta(siteCount, runs) {
   return {
     generated_at: new Date().toISOString(),
     tool_versions: { lighthouse: "12.x" },
-    methodology: "mobile-simulated, lighthouse-only (network data from network-requests audit)",
+    methodology: "mobile-simulated, lighthouse-only (simulated throttling; network data from network-requests audit)",
     runs_per_site: runs, outlier_method: "IQR", sites_audited: siteCount,
   };
 }
@@ -402,6 +438,7 @@ async function main() {
     const queue = [...todo];
     let active  = 0;
     let stopped = false;
+    let savedThisPass = 0;
 
     await new Promise((resolve) => {
       function next() {
@@ -409,10 +446,11 @@ async function main() {
           const site = queue.shift();
           active++;
           auditSite(site)
-            .then((result) => { resultsMap[site.url] = result; })
+            .then((result) => {
+              if (result) { resultsMap[site.url] = result; savedThisPass++; }
+            })
             .catch((e) => {
               console.error(`   ✗ Fatal error for ${site.url}: ${e.message}`);
-              resultsMap[site.url] = { name: site.name, url: site.url, error: e.message };
             })
             .finally(() => {
               saveResults(OUT_FILE, sites, resultsMap);
@@ -434,6 +472,17 @@ async function main() {
       }
       next();
     });
+
+    if (shutdownRequested) break;
+
+    // If a full pass produced zero new results, the remaining sites are
+    // failing persistently (blocked bots, dead hosts, etc.). Stop rather than
+    // looping forever; they can be retried on a later run.
+    if (savedThisPass === 0) {
+      const remaining = sites.filter((s) => !resultsMap[s.url]).map((s) => s.name);
+      console.warn(`\n⚠ No sites completed this pass. ${remaining.length} site(s) remain unsaved:\n   ${remaining.join(", ")}\n   Stopping to avoid an infinite retry loop — re-run to retry them.\n`);
+      break;
+    }
   }
 
   const elapsedSeconds = round((Date.now() - startedAt) / 1000, 1);

@@ -48,14 +48,6 @@ let shutdownRequested = false;
 process.on("SIGINT",  () => { if (!shutdownRequested) { console.log("\n⚠  Shutdown requested — finishing current site then saving…"); shutdownRequested = true; } });
 process.on("SIGTERM", () => { if (!shutdownRequested) { console.log("\n⚠  SIGTERM received — finishing current site then saving…");  shutdownRequested = true; } });
 
-// ─── Lighthouse mutex ─────────────────────────────────────────────────────────
-let lhMutexTail = Promise.resolve();
-function withLighthouseLock(fn) {
-  const next = lhMutexTail.then(() => fn());
-  lhMutexTail = next.catch(() => {});
-  return next;
-}
-
 // ─── Config ───────────────────────────────────────────────────────────────────
 const LIGHTHOUSE_FLAGS = {
   logLevel: "error", output: "json", onlyCategories: ["performance"],
@@ -216,7 +208,10 @@ async function runLighthouse(url) {
   const launch = await getChromeLauncher();
   const chrome = await launch({
     chromePath: CHROME_PATH || undefined,
-    chromeFlags: ["--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", `--user-data-dir=${tmpDir}`],
+    chromeFlags: ["--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
+      "--no-first-run", "--disable-extensions", "--disable-background-networking",
+      "--disable-component-update", "--disable-default-apps", "--disable-sync",
+      "--metrics-recording-only", `--user-data-dir=${tmpDir}`],
   });
 
   let result = null;
@@ -251,7 +246,7 @@ async function auditSite(site) {
   for (let i = 1; i <= NUM_RUNS; i++) {
     console.log(`   Run ${i}/${NUM_RUNS}…`);
     const [lhResult, netResult] = await Promise.allSettled([
-      withLighthouseLock(() => runLighthouse(url)),
+      runLighthouse(url),
       captureNetworkData(url),
     ]);
 
