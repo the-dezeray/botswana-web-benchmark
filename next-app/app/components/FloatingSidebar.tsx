@@ -20,14 +20,14 @@ export function FloatingSidebar() {
   }
 
   const itemBaseClassName = 
-    'group/item flex w-full items-center  rounded-lg  py-1 text-left text-xs font-normal tracking-tight text-slate-200 transition-all duration-200 ease-out hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+    'group/item flex w-full items-center  rounded-lg  py-1 text-left text-xs font-normal tracking-tight text-stone-700 transition-all duration-200 ease-out hover:bg-stone-900/5 hover:text-stone-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/30'
   
-  // Removed background, cyan tint, and gradients — pure white text/icon styling
+  // Paper light styling — dark ink on paper card
   const iconBaseClassName = 
-    'flex h-7 w-7 shrink-0 items-center justify-center text-white/80 transition-colors duration-200 group-hover/item:text-white'
+    'flex h-7 w-7 shrink-0 items-center justify-center text-stone-600 transition-colors duration-200 group-hover/item:text-stone-950'
 
   return (
-    <div className="group/sidebar bg-neutral-950 fixed bottom-4 right-4 z-50 flex max-h-[calc(100vh-2rem)] w-11 flex-col items-end overflow-hidden rounded-xl p-1 backdrop-blur-md transition-all duration-300 ease-in-out hover:w-48 hover:p-1.5 sm:bottom-6 sm:right-6 border border-white/10 shadow-lg">
+    <div className="group/sidebar bg-[#fffef9] fixed bottom-4 right-4 z-50 flex max-h-[calc(100vh-2rem)] w-11 flex-col items-end overflow-hidden rounded-xl p-1 backdrop-blur-md transition-all duration-300 ease-in-out hover:w-48 hover:p-1.5 sm:bottom-6 sm:right-6 border border-[#e5dcc8] shadow-[0_10px_30px_rgba(28,25,23,0.12)]">
       <nav className="flex w-full flex-col ">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon

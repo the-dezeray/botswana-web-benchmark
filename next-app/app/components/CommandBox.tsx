@@ -14,7 +14,7 @@ export function CommandBox() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 w-full max-w-[580px] py-4">
-      <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-mono font-medium text-center">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-mono font-medium text-center">
         Run the benchmark yourself
       </p>
 

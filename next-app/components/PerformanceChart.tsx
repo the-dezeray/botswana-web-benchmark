@@ -135,7 +135,7 @@ export default function PerformanceChart() {
   const verticalChartHeight = Math.max(500, filteredData.length * 28 + 60);
 
   return (
-    <section id="performance-chart" className="w-full  border-t border-[#0A2ADB]/10">
+    <section id="performance-chart" className="w-full bg-[#f7f2e7] text-[#1c1917] border-t border-[#e5dcc8]">
       <div className={`w-full mx-auto px-3 sm:px-6 py-12 space-y-6 transition-all duration-300 ${
         widthMode === "full" ? "max-w-[98vw]" : widthMode === "ultra" ? "max-w-[100vw]" : "max-w-7xl"
       }`}>
@@ -150,14 +150,14 @@ export default function PerformanceChart() {
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
               Performance Score by Site
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
               Ranked performance overview across audited sites in Botswana (Lighthouse mobile simulation score 0–100).
             </p>
           </div>
         </div>
 
         {/* Data Chart */}
-        <div className="rounded-2xl p-4 sm:p-6   overflow-hidden">
+        <div className="rounded-2xl p-4 sm:p-6 overflow-hidden">
           {orientation === "horizontal" ? (
             /* Horizontal X-Axis Layout (Vertical Columns) */
             <div className="w-full overflow-x-auto">
@@ -185,10 +185,10 @@ export default function PerformanceChart() {
                         </pattern>
                       ))}
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E0CF" />
                     <XAxis
                       dataKey="name"
-                      stroke="#64748B"
+                      stroke="#78716c"
                       fontSize={9}
                       interval={0}
                       tick={({ x, y, payload }) => {
@@ -200,7 +200,7 @@ export default function PerformanceChart() {
                               y={0}
                               dy={12}
                               textAnchor="end"
-                              fill="#CBD5E1"
+                              fill="#57534e"
                               fontSize={9}
                               transform="rotate(-50)"
                             >
@@ -213,11 +213,11 @@ export default function PerformanceChart() {
                     <YAxis
                       type="number"
                       domain={[0, 100]}
-                      stroke="#64748B"
+                      stroke="#78716c"
                       fontSize={11}
-                      tick={{ fill: "#94A3B8" }}
+                      tick={{ fill: "#57534e" }}
                       tickFormatter={(val) => `${val}`}
-                      label={{ value: "Score (0–100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#94A3B8" }}
+                      label={{ value: "Score (0–100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#57534e" }}
                     />
                     <Tooltip
                       cursor={{ fill: "rgba(10, 42, 219, 0.04)" }}
@@ -228,24 +228,24 @@ export default function PerformanceChart() {
                           const barColor = COLOR_PALETTE[idx % COLOR_PALETTE.length];
 
                           return (
-                            <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px] bg-[#1D1D1F]">
-                              <div className="flex items-center gap-2 pb-1 border-b border-slate-700">
+                            <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 z-50 min-w-[200px]">
+                              <div className="flex items-center gap-2 pb-1 border-b border-stone-200">
                                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: barColor }} />
-                                <span className="font-bold text-white truncate max-w-[170px]">{d.name}</span>
+                                <span className="font-bold text-stone-900 truncate max-w-[170px]">{d.name}</span>
                               </div>
-                              <div className="flex justify-between text-slate-300">
+                              <div className="flex justify-between text-stone-600">
                                 <span>Rank:</span>
-                                <span className="font-bold text-white">#{d.rank}</span>
+                                <span className="font-bold text-stone-900">#{d.rank}</span>
                               </div>
-                              <div className="flex justify-between text-slate-300">
+                              <div className="flex justify-between text-stone-600">
                                 <span>Score:</span>
-                                <span className="font-bold text-emerald-400">{d.score} / 100</span>
+                                <span className="font-bold text-emerald-700">{d.score} / 100</span>
                               </div>
-                              <div className="flex justify-between text-slate-300">
+                              <div className="flex justify-between text-stone-600">
                                 <span>LCP:</span>
                                 <span>{d.lcp ? `${d.lcp}s` : "N/A"}</span>
                               </div>
-                              <div className="flex justify-between text-slate-300">
+                              <div className="flex justify-between text-stone-600">
                                 <span>Page Size:</span>
                                 <span>{d.totalSizeKB ? `${(d.totalSizeKB / 1024).toFixed(1)} MB` : "N/A"}</span>
                               </div>
@@ -264,7 +264,7 @@ export default function PerformanceChart() {
                           dataKey="score"
                           position="top"
                           formatter={(val: any) => (typeof val === "number" ? Math.round(val) : val)}
-                          style={{ fontSize: "10px", fontFamily: "monospace", fill: "#F1F5F9", fontWeight: "bold" }}
+                          style={{ fontSize: "10px", fontFamily: "monospace", fill: "#44403c", fontWeight: "bold" }}
                         />
                       )}
                       {filteredData.map((entry, idx) => {
@@ -303,18 +303,18 @@ export default function PerformanceChart() {
                       </pattern>
                     ))}
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E7E0CF" />
                   <XAxis
                     type="number"
                     domain={[0, 100]}
-                    stroke="#64748B"
+                    stroke="#78716c"
                     fontSize={11}
                     tickFormatter={(val) => `${val}`}
                   />
                   <YAxis
                     type="category"
                     dataKey="name"
-                    stroke="#f6f8fa"
+                    stroke="#78716c"
                     fontSize={11}
                     width={135}
                     tickLine={false}
@@ -326,7 +326,7 @@ export default function PerformanceChart() {
                             x={-6}
                             y={4}
                             textAnchor="end"
-                            fill="#df6311"
+                            fill="#44403c"
                             fontSize={11}
                             fontFamily="sans-serif"
                             fontWeight="500"
@@ -346,24 +346,24 @@ export default function PerformanceChart() {
                         const barColor = COLOR_PALETTE[idx % COLOR_PALETTE.length];
 
                         return (
-                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[200px] bg-[#1D1D1F]">
-                            <div className="flex items-center gap-2 pb-1 border-b border-slate-700">
+                          <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 z-50 min-w-[200px]">
+                            <div className="flex items-center gap-2 pb-1 border-b border-stone-200">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: barColor }} />
-                              <span className="font-bold text-white truncate max-w-[170px]">{d.name}</span>
+                              <span className="font-bold text-stone-900 truncate max-w-[170px]">{d.name}</span>
                             </div>
-                            <div className="flex justify-between text-[#E2E8F0]">
+                            <div className="flex justify-between text-stone-600">
                               <span>Rank:</span>
-                              <span className="font-bold text-white">#{d.rank}</span>
+                              <span className="font-bold text-stone-900">#{d.rank}</span>
                             </div>
-                            <div className="flex justify-between text-[#E2E8F0]">
+                            <div className="flex justify-between text-stone-600">
                               <span>Score:</span>
-                              <span className="font-bold text-emerald-400">{d.score} / 100</span>
+                              <span className="font-bold text-emerald-700">{d.score} / 100</span>
                             </div>
-                            <div className="flex justify-between text-[#E2E8F0]">
+                            <div className="flex justify-between text-stone-600">
                               <span>LCP:</span>
                               <span>{d.lcp ? `${d.lcp}s` : "N/A"}</span>
                             </div>
-                            <div className="flex justify-between text-[#E2E8F0]">
+                            <div className="flex justify-between text-stone-600">
                               <span>Page Size:</span>
                               <span>{d.totalSizeKB ? `${(d.totalSizeKB / 1024).toFixed(1)} MB` : "N/A"}</span>
                             </div>
@@ -383,7 +383,7 @@ export default function PerformanceChart() {
                         dataKey="score"
                         position="right"
                         formatter={(val: any) => (typeof val === "number" ? Math.round(val) : val)}
-                        style={{ fontSize: "10px", fontFamily: "monospace", fill: "#F1F5F9", fontWeight: "bold" }}
+                        style={{ fontSize: "10px", fontFamily: "monospace", fill: "#44403c", fontWeight: "bold" }}
                       />
                     )}
                     {filteredData.map((entry, idx) => {

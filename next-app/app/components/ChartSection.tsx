@@ -5,7 +5,7 @@ import { Globe } from "lucide-react";
 function ChartSkeleton() {
   return (
     <div className="w-full py-16 flex items-center justify-center">
-      <span className="text-xs font-mono /50 animate-pulse">
+      <span className="text-xs font-mono text-stone-500 animate-pulse">
         Loading chart…
       </span>
     </div>
@@ -93,14 +93,14 @@ export default function ChartSection({ siteData }: Props) {
       {siteData.length > 0 && (
         <section
           id="size-speed-ranking"
-          className="w-full  text-white px-6 sm:px-10 py-16 border-t border-slate-800/80"
+          className="w-full bg-[#f7f2e7] text-[#1c1917] px-6 sm:px-10 py-16 border-t border-[#e5dcc8]"
         >
           <div className="max-w-[1400px] mx-auto">
             <div className="mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2 font-space-grotesk">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1c1917] mb-2 font-space-grotesk">
                 Site Size &amp; Speed Rankings
               </h2>
-              <p className="text-slate-400 text-sm max-w-2xl font-sans">
+              <p className="text-stone-600 text-sm max-w-2xl font-sans">
                 Comparing audited Botswana websites by total page size (MB) and
                 Largest Contentful Paint (LCP) speed.
               </p>

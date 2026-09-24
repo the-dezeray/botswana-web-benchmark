@@ -59,7 +59,7 @@ export default function CoreWebVitalsAnalysis() {
   const chartHeight = Math.max(500, data.length * 32 + 60);
 
   return (
-    <section id="core-web-vitals" className="w-full  border-t border-[#0A2ADB]/10">
+    <section id="core-web-vitals" className="w-full bg-[#f7f2e7] text-[#1c1917] border-t border-[#e5dcc8]">
       <div className="w-full max-w-[98vw] mx-auto px-3 sm:px-6 py-12 space-y-8">
         
         {/* Section Header */}
@@ -71,18 +71,18 @@ export default function CoreWebVitalsAnalysis() {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
             Core Web Vitals Analysis
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
             Detailed breakdown of Largest Contentful Paint (LCP) & First Contentful Paint (FCP) timing metrics in seconds, alongside performance score correlation.
           </p>
         </div>
 
         {/* Chart 1: LCP & FCP (seconds) 2 Bars for each */}
-        <div className="rounded-2xl p-4 sm:p-6   space-y-4">
+        <div className="rounded-2xl p-4 sm:p-6 space-y-4">
           <div>
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
               LCP &amp; FCP Comparison (seconds)
             </h3>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
+            <p className="text-xs text-stone-500 font-mono mt-0.5">
               Two bars for each audited site comparing Largest Contentful Paint vs First Contentful Paint (Lower seconds = Faster performance).
             </p>
           </div>
@@ -94,17 +94,17 @@ export default function CoreWebVitalsAnalysis() {
                 layout="vertical"
                 margin={{ top: 10, right: 30, left: 10, bottom: 20 }}
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E7E0CF" />
                 <XAxis
                   type="number"
-                  stroke="#64748B"
+                  stroke="#78716c"
                   fontSize={11}
                   unit="s"
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  stroke="#334155"
+                  stroke="#78716c"
                   fontSize={11}
                   width={135}
                   tickLine={false}
@@ -114,7 +114,7 @@ export default function CoreWebVitalsAnalysis() {
                         x={-6}
                         y={4}
                         textAnchor="end"
-                        fill="#ecf1f3"
+                        fill="#44403c"
                         className="font-sans text-[11px] font-medium"
                       >
                         {payload.value.length > 20 ? payload.value.slice(0, 18) + "…" : payload.value}
@@ -128,19 +128,19 @@ export default function CoreWebVitalsAnalysis() {
                     if (active && payload && payload.length) {
                       const d: LcpFcpItem = payload[0].payload;
                       return (
-                        <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 z-50 min-w-[190px] bg-[#1D1D1F]">
-                          <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
-                          <div className="flex justify-between text-slate-300">
-                            <span className="text-[#3B82F6]">LCP:</span>
-                            <span className="font-bold text-white">{d.lcp} s</span>
+                        <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 z-50 min-w-[190px]">
+                          <div className="font-bold text-stone-900 pb-1 border-b border-stone-200">{d.name}</div>
+                          <div className="flex justify-between text-stone-600">
+                            <span className="text-[#1d4ed8]">LCP:</span>
+                            <span className="font-bold text-stone-900">{d.lcp} s</span>
                           </div>
-                          <div className="flex justify-between text-slate-300">
-                            <span className="text-[#10B981]">FCP:</span>
-                            <span className="font-bold text-white">{d.fcp} s</span>
+                          <div className="flex justify-between text-stone-600">
+                            <span className="text-[#047857]">FCP:</span>
+                            <span className="font-bold text-stone-900">{d.fcp} s</span>
                           </div>
-                          <div className="flex justify-between text-slate-300 pt-1 border-t border-slate-800">
+                          <div className="flex justify-between text-stone-600 pt-1 border-t border-stone-200">
                             <span>Score:</span>
-                            <span className="text-amber-400 font-bold">{d.score} / 100</span>
+                            <span className="text-amber-700 font-bold">{d.score} / 100</span>
                           </div>
                         </div>
                       );
@@ -161,12 +161,12 @@ export default function CoreWebVitalsAnalysis() {
         </div>
 
         {/* Chart 2: Performance vs LCP Correlation */}
-        <div className="rounded-2xl p-4 sm:p-6   space-y-4">
+        <div className="rounded-2xl p-4 sm:p-6 space-y-4">
           <div>
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
               Performance vs LCP Correlation
             </h3>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
+            <p className="text-xs text-stone-500 font-mono mt-0.5">
               Scatter plot displaying how LCP load time directly correlates with overall Lighthouse Performance Score.
             </p>
           </div>
@@ -174,24 +174,24 @@ export default function CoreWebVitalsAnalysis() {
           <div className="h-[380px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E7E0CF" />
                 <XAxis
                   type="number"
                   dataKey="lcp"
                   name="LCP (seconds)"
                   unit="s"
-                  stroke="#64748B"
+                  stroke="#78716c"
                   fontSize={11}
-                  label={{ value: "LCP (seconds)", position: "bottom", offset: 0, fontSize: 11, fill: "#64748B" }}
+                  label={{ value: "LCP (seconds)", position: "bottom", offset: 0, fontSize: 11, fill: "#57534e" }}
                 />
                 <YAxis
                   type="number"
                   dataKey="score"
                   name="Performance Score"
                   domain={[0, 100]}
-                  stroke="#64748B"
+                  stroke="#78716c"
                   fontSize={11}
-                  label={{ value: "Score (0-100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#64748B" }}
+                  label={{ value: "Score (0-100)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#57534e" }}
                 />
                 <ZAxis range={[60, 60]} />
                 <Tooltip
@@ -200,10 +200,10 @@ export default function CoreWebVitalsAnalysis() {
                     if (active && payload && payload.length) {
                       const d: LcpFcpItem = payload[0].payload;
                       return (
-                        <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 bg-[#1D1D1F]">
-                          <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
-                          <div>Performance Score: <span className="text-emerald-400 font-bold">{d.score} / 100</span></div>
-                          <div>LCP Time: <span className="text-sky-400 font-bold">{d.lcp} s</span></div>
+                        <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1">
+                          <div className="font-bold text-stone-900 pb-1 border-b border-stone-200">{d.name}</div>
+                          <div>Performance Score: <span className="text-emerald-700 font-bold">{d.score} / 100</span></div>
+                          <div>LCP Time: <span className="text-sky-700 font-bold">{d.lcp} s</span></div>
                         </div>
                       );
                     }

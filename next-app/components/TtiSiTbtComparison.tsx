@@ -68,7 +68,7 @@ export default function TtiSiTbtComparison() {
           y={0}
           dy={12}
           textAnchor="end"
-          fill="#f5eff4"
+          fill="#57534e"
           fontSize={9}
           transform="rotate(-50)"
         >
@@ -79,7 +79,7 @@ export default function TtiSiTbtComparison() {
   };
 
   return (
-    <section id="tti-si-tbt" className="w-full  border-t border-[#0A2ADB]/10">
+    <section id="tti-si-tbt" className="w-full bg-[#f7f2e7] text-[#1c1917] border-t border-[#e5dcc8]">
       <div className="w-full max-w-[98vw] mx-auto px-3 sm:px-6 py-12 space-y-6">
 
         {/* Section Header */}
@@ -91,23 +91,23 @@ export default function TtiSiTbtComparison() {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
             TTI / SI / TBT Comparison
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
             Split graphs to isolate high-magnitude Total Blocking Time (TBT in milliseconds) from Time to Interactive (TTI) and Speed Index (SI in seconds) to avoid visual scale distortion.
           </p>
         </div>
 
         {/* Chart 1: TTI & SI (Seconds) — Stacked / Grouped Layout matching Requests & 3rd Party Ratio */}
-        <div className="rounded-2xl p-4 sm:p-6   space-y-3">
+        <div className="rounded-2xl p-4 sm:p-6 space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">
+              <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
                 1. Time to Interactive (TTI) &amp; Speed Index (SI)
               </h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
+              <p className="text-xs text-stone-500 font-mono mt-0.5">
                 TTI measures when a page becomes fully interactive; SI measures how quickly content is visually displayed. (Lower = Faster)
               </p>
             </div>
-            <span className="shrink-0 px-2.5 py-1 bg-slate-800/80 text-slate-300 font-mono text-[10px] rounded-full border border-slate-700/60 font-semibold">
+            <span className="shrink-0 px-2.5 py-1 bg-stone-900/5 text-stone-700 font-mono text-[10px] rounded-full border border-[#e5dcc8] font-semibold">
               Scale: Seconds (s)
             </span>
           </div>
@@ -120,10 +120,10 @@ export default function TtiSiTbtComparison() {
                   layout="horizontal"
                   margin={{ top: 10, right: 20, left: 10, bottom: 95 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E0CF" />
                   <XAxis
                     dataKey="name"
-                    stroke="#334155"
+                    stroke="#78716c"
                     fontSize={11}
                     interval={0}
                     tick={renderXTick}
@@ -131,7 +131,7 @@ export default function TtiSiTbtComparison() {
                   />
                   <YAxis
                     type="number"
-                    stroke="#64748B"
+                    stroke="#78716c"
                     fontSize={11}
                     unit="s"
                     width={45}
@@ -143,19 +143,19 @@ export default function TtiSiTbtComparison() {
                       if (active && payload && payload.length) {
                         const d: TtiSiTbtItem = payload[0].payload;
                         return (
-                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px] bg-[#1D1D1F]">
-                            <div className="font-bold text-white pb-1 border-b border-slate-700 truncate">{d.name}</div>
-                            <div className="flex justify-between gap-4 text-slate-300">
-                              <span className="text-indigo-400">TTI (Interactive):</span>
-                              <span className="font-bold text-white">{d.tti} s</span>
+                          <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 min-w-[180px]">
+                            <div className="font-bold text-stone-900 pb-1 border-b border-stone-200 truncate">{d.name}</div>
+                            <div className="flex justify-between gap-4 text-stone-600">
+                              <span className="text-indigo-700">TTI (Interactive):</span>
+                              <span className="font-bold text-stone-900">{d.tti} s</span>
                             </div>
-                            <div className="flex justify-between gap-4 text-slate-300">
-                              <span className="text-cyan-400">Speed Index (SI):</span>
-                              <span className="font-bold text-white">{d.si} s</span>
+                            <div className="flex justify-between gap-4 text-stone-600">
+                              <span className="text-cyan-700">Speed Index (SI):</span>
+                              <span className="font-bold text-stone-900">{d.si} s</span>
                             </div>
-                            <div className="flex justify-between gap-4 text-slate-300 pt-1 border-t border-slate-800">
+                            <div className="flex justify-between gap-4 text-stone-600 pt-1 border-t border-stone-200">
                               <span>Combined Time:</span>
-                              <span className="font-bold text-emerald-400">{(d.tti + d.si).toFixed(2)} s</span>
+                              <span className="font-bold text-emerald-700">{(d.tti + d.si).toFixed(2)} s</span>
                             </div>
                           </div>
                         );
@@ -177,17 +177,17 @@ export default function TtiSiTbtComparison() {
         </div>
 
         {/* Chart 2: TBT (Milliseconds) — Ranked by TBT, Reverse Diagonal Hatch & Grown Logarithmic Y-Axis */}
-        <div className="rounded-2xl p-4 sm:p-6   space-y-3">
+        <div className="rounded-2xl p-4 sm:p-6 space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">
+              <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
                 2. Total Blocking Time (TBT) — Ranked
               </h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
+              <p className="text-xs text-stone-500 font-mono mt-0.5">
                 Ranked breakdown of total main thread blocking time (ms) between FCP and TTI. (Lower = Better)
               </p>
             </div>
-            <span className="shrink-0 px-2.5 py-1 bg-rose-500/10 text-rose-300 font-mono text-[10px] rounded-full border border-rose-500/20 font-semibold">
+            <span className="shrink-0 px-2.5 py-1 bg-rose-500/10 text-rose-800 font-mono text-[10px] rounded-full border border-rose-500/25 font-semibold">
               Scale: Logarithmic Milliseconds (ms)
             </span>
           </div>
@@ -212,10 +212,10 @@ export default function TtiSiTbtComparison() {
                       <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="2.5" />
                     </pattern>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E0CF" />
                   <XAxis
                     dataKey="name"
-                    stroke="#334155"
+                    stroke="#78716c"
                     fontSize={11}
                     interval={0}
                     tick={renderXTick}
@@ -227,7 +227,7 @@ export default function TtiSiTbtComparison() {
                     domain={[10, 15000]}
                     ticks={[10, 100, 300, 600, 1000, 3000, 10000]}
                     allowDataOverflow={true}
-                    stroke="#64748B"
+                    stroke="#78716c"
                     fontSize={11}
                     unit="ms"
                     width={60}
@@ -239,13 +239,13 @@ export default function TtiSiTbtComparison() {
                       if (active && payload && payload.length) {
                         const d: TtiSiTbtItem = payload[0].payload;
                         return (
-                          <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[180px] bg-[#1D1D1F]">
-                            <div className="font-bold text-white pb-1 border-b border-slate-700 truncate">{d.name}</div>
-                            <div className="flex justify-between gap-4 text-slate-300">
-                              <span className="text-rose-400">TBT:</span>
-                              <span className="font-bold text-rose-300">{d.tbt} ms</span>
+                          <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 min-w-[180px]">
+                            <div className="font-bold text-stone-900 pb-1 border-b border-stone-200 truncate">{d.name}</div>
+                            <div className="flex justify-between gap-4 text-stone-600">
+                              <span className="text-rose-700">TBT:</span>
+                              <span className="font-bold text-rose-700">{d.tbt} ms</span>
                             </div>
-                            <div className="text-[10px] text-slate-400 pt-0.5">
+                            <div className="text-[10px] text-stone-500 pt-0.5">
                               {d.tbt < 200 ? "✓ Good (<200ms)" : d.tbt < 600 ? "⚠ Needs Improvement" : "✗ Poor (>600ms)"}
                             </div>
                           </div>

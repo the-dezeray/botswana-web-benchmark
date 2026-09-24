@@ -40,7 +40,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
     >
-      <body className="min-h-screen  bg-[#1D1D1F]">
+      <body className="min-h-screen bg-[#f7f2e7] text-[#1c1917]">
         {children}
         <FloatingSidebar />
       </body>

@@ -20,7 +20,7 @@ const gridImages = Array.from({ length: 24 }).map(
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full h-screen overflow-hidden flex flex-col justify-center items-center ">
+    <section className="relative w-full h-screen overflow-hidden flex flex-col justify-center items-center bg-[#f7f2e7] text-[#1c1917]">
       {/* Mesh Texture Overlay */}
       <div className="mesh-overlay absolute inset-0 z-0 pointer-events-none"></div>
 
@@ -28,12 +28,12 @@ export default function HeroSection() {
       <nav className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 sm:px-10 py-6">
         <div className="flex items-center gap-3 font-space-grotesk">
           <img src="/logo.png" alt="ATSB Logo" className="h-8 w-auto" />
-          <div className="flex items-center gap-2 px-3 py-1.5 border rounded">
-            <span className="text-[12px] font-bold text-[#FDE68A]  tracking-[0.05em]">
+          <div className="flex items-center gap-2 px-3 py-1.5 border border-[#e5dcc8] bg-[#fffef9] rounded shadow-sm">
+            <span className="text-[12px] font-bold text-[#1c1917]  tracking-[0.05em]">
               ATSB
             </span>
-            <span className="text-[11px] /50">|</span>
-            <span className="text-[11px] font-mono /60 tracking-wider">
+            <span className="text-[11px] text-stone-400">|</span>
+            <span className="text-[11px] font-mono text-stone-600 tracking-wider">
               V-0.6
             </span>
           </div>
@@ -55,10 +55,10 @@ export default function HeroSection() {
         
         {/* 1. Minimal Header Section */}
         <div className="text-center mb-10 flex flex-col items-center">
-          <h1 className="text-[32px] md:text-[38px] font-medium tracking-tight font-space-grotesk mb-3">
-            <span className="text-[#FDE68A] font-mono ">ATSB</span> v-0.6-beta
+          <h1 className="text-[32px] md:text-[38px] font-medium tracking-tight font-space-grotesk mb-3 text-[#1c1917]">
+            <span className="inline-block bg-[#1c1917] text-[#FDE68A] font-mono px-2.5 py-0.5 rounded-md">ATSB</span> v-0.6-beta
           </h1>
-          <p className="text-[16px] md:text-[18px] font-light leading-relaxed max-w-xl mx-auto">
+          <p className="text-[16px] md:text-[18px] font-light leading-relaxed max-w-xl mx-auto text-stone-600">
             A Tiny Scanner For Botswana
           </p>
         </div>
@@ -74,7 +74,7 @@ export default function HeroSection() {
           {gridImages.map((site, index) => (
             <div
               key={index}
-              className="w-8 h-8 rounded bg-white overflow-hidden flex items-center justify-center border border-gray-200/50 shadow-sm"
+              className="w-8 h-8 rounded bg-[#fffef9] overflow-hidden flex items-center justify-center border border-[#e5dcc8] shadow-sm"
             >
               {site.src ? (
                 <img
@@ -83,12 +83,12 @@ export default function HeroSection() {
                   className="w-full h-full object-cover"
                   loading="lazy"
                   onError={(e) => {
-                    e.currentTarget.style.backgroundColor = "#e2e8f0";
+                    e.currentTarget.style.backgroundColor = "#e7e5e4";
                   }}
                 />
               ) : (
                 <div className="w-full h-full bg-[#0A2ADB]/5 flex items-center justify-center rounded">
-                  <span className="text-[8px] font-mono /60">
+                  <span className="text-[8px] font-mono text-stone-500">
                     {site.alt}
                   </span>
                 </div>
@@ -100,12 +100,12 @@ export default function HeroSection() {
         {/* 3. NPX Command Box */}
         <CommandBox />
 
-        {/* Down chevron - yellow */}
+        {/* Down chevron - dark on paper */}
         <a
           id="chevron-down"
           href="#performance-chart"
           aria-label="Scroll down"
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10  text-yellow-100 p-10 hover:translate-y-1 transition-transform"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 text-stone-800 p-10 hover:translate-y-1 transition-transform"
         >
           <ChevronDown className="w-16 h-16" />
         </a>

@@ -19,7 +19,7 @@ export default function Home() {
   const siteData = getSiteData();
 
   return (
-    <main className="relative w-full min-h-screen   font-ibm-plex-mono">
+    <main className="relative w-full min-h-screen bg-[#f7f2e7] text-[#1c1917] font-ibm-plex-mono">
 
       {/* Hero — client island (cycling images + clipboard) */}
       <HeroSection />
@@ -59,7 +59,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full  text-[11px] px-6 sm:px-10 py-6 border-t border-[#0A2ADB]/10">
+      <footer className="w-full bg-[#f7f2e7] text-stone-600 text-[11px] px-6 sm:px-10 py-6 border-t border-[#e5dcc8]">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex flex-col gap-1">
             <span className="opacity-70">

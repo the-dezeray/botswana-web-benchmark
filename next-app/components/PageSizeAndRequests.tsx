@@ -72,7 +72,7 @@ export default function PageSizeAndRequests() {
           y={0}
           dy={6}
           textAnchor="end"
-          fill="#d4c7c7"
+          fill="#57534e"
           fontSize={11}
           fontFamily="sans-serif"
           fontWeight={500}
@@ -85,7 +85,7 @@ export default function PageSizeAndRequests() {
   };
 
   return (
-    <section id="page-size-requests" className="w-full  border-t border-[#0A2ADB]/10">
+    <section id="page-size-requests" className="w-full bg-[#f7f2e7] text-[#1c1917] border-t border-[#e5dcc8]">
       <div className="w-full mx-auto px-3 sm:px-6 py-12 space-y-6 transition-all duration-300 max-w-7xl">
 
         {/* Section Header */}
@@ -98,7 +98,7 @@ export default function PageSizeAndRequests() {
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight ">
               Page Weight &amp; Network Requests
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
               Side-by-side comparative analysis of total page payload size (MB) vs HTTP network request volume &amp; third-party ratio.
             </p>
           </div>
@@ -110,17 +110,17 @@ export default function PageSizeAndRequests() {
         <div className="grid grid-cols-1 gap-6">
 
           {/* Graph 1: Page Size (MB) by Site */}
-          <div className=" rounded-2xl p-4 sm:p-6   space-y-3">
+          <div className="rounded-2xl p-4 sm:p-6 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
+                <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
                   1. Page Size (MB) by Site
                 </h3>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                <p className="text-xs text-stone-500 font-mono mt-0.5">
                   Total payload size transferred in Megabytes (converted from KB). Logarithmic scale applied so lower values (0.5MB–5MB) are clearly visible alongside outliers (~70MB).
                 </p>
               </div>
-              <span className="shrink-0 px-2.5 py-1 bg-purple-500/10 text-purple-300 font-mono text-[10px] rounded-full border border-purple-500/20 font-semibold">
+              <span className="shrink-0 px-2.5 py-1 bg-purple-500/10 text-purple-800 font-mono text-[10px] rounded-full border border-purple-500/25 font-semibold">
                 Scale: Logarithmic MB
               </span>
             </div>
@@ -145,15 +145,15 @@ export default function PageSizeAndRequests() {
                         <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="2.5" />
                       </pattern>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E0CF" />
                     <XAxis
                       type="category"
                       dataKey="name"
-                      stroke="#cbaaaa"
+                      stroke="#78716c"
                       fontSize={11}
                       tick={<CustomXTick />}
                       interval={0}
-                      fill="#d5dae1"
+                      fill="#57534e"
                       tickLine={false}
                     />
                     <YAxis
@@ -162,11 +162,11 @@ export default function PageSizeAndRequests() {
                       domain={[0.1, 100]}
                       ticks={[0.1, 0.5, 1, 2, 5, 10, 25, 50, 100]}
                       allowDataOverflow={true}
-                      stroke="#ffffff"
+                      stroke="#78716c"
                       fontSize={11}
                       unit=" MB"
                       width={65}
-                      fill="#ffffff"
+                      fill="#57534e"
                       tickLine={false}
                     />
                     <Tooltip
@@ -175,15 +175,15 @@ export default function PageSizeAndRequests() {
                         if (active && payload && payload.length) {
                           const d: PageSizeAndRequestsItem = payload[0].payload;
                           return (
-                            <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 bg-[#1D1D1F]">
-                              <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
-                              <div className="flex justify-between gap-4 text-slate-300">
+                            <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1">
+                              <div className="font-bold text-stone-900 pb-1 border-b border-stone-200">{d.name}</div>
+                              <div className="flex justify-between gap-4 text-stone-600">
                                 <span>Page Size:</span>
-                                <span className="font-bold text-purple-300">{d.sizeMB} MB</span>
+                                <span className="font-bold text-purple-800">{d.sizeMB} MB</span>
                               </div>
-                              <div className="flex justify-between gap-4 text-slate-300">
+                              <div className="flex justify-between gap-4 text-stone-600">
                                 <span>Score:</span>
-                                <span className="font-bold text-emerald-400">{d.score} / 100</span>
+                                <span className="font-bold text-emerald-700">{d.score} / 100</span>
                               </div>
                             </div>
                           );
@@ -205,17 +205,17 @@ export default function PageSizeAndRequests() {
           </div>
 
           {/* Graph 2: Requests & 3rd Party Ratio — Ranked Stacked Bar Chart */}
-          <div className="rounded-2xl p-4 sm:p-6   space-y-3">
+          <div className="rounded-2xl p-4 sm:p-6 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
+                <h3 className="text-base font-bold text-[#1c1917] tracking-tight">
                   2. Requests &amp; 3rd Party Ratio — Ranked Stacked Chart
                 </h3>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                <p className="text-xs text-stone-500 font-mono mt-0.5">
                   Ranked HTTP request volume broken down by First-Party vs Third-Party requests count &amp; ratio percentage.
                 </p>
               </div>
-              <span className="shrink-0 px-2.5 py-1 bg-sky-500/10 text-sky-300 font-mono text-[10px] rounded-full border border-sky-500/20 font-semibold">
+              <span className="shrink-0 px-2.5 py-1 bg-sky-500/10 text-sky-800 font-mono text-[10px] rounded-full border border-sky-500/25 font-semibold">
                 Ranked Stacked
               </span>
             </div>
@@ -228,11 +228,11 @@ export default function PageSizeAndRequests() {
                     layout="horizontal"
                     margin={{ top: 10, right: 20, left: 10, bottom: 95 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E0CF" />
                     <XAxis
                       type="category"
                       dataKey="name"
-                      stroke="#ffffff"
+                      stroke="#78716c"
                       fontSize={11}
                       tick={<CustomXTick />}
                       interval={0}
@@ -240,7 +240,7 @@ export default function PageSizeAndRequests() {
                     />
                     <YAxis
                       type="number"
-                      stroke="#ffffff"
+                      stroke="#78716c"
                       fontSize={11}
                       width={50}
                       tickLine={false}
@@ -252,23 +252,23 @@ export default function PageSizeAndRequests() {
                           const d: PageSizeAndRequestsItem = payload[0].payload;
                           const firstParty = d.firstPartyRequests ?? Math.max(0, d.totalRequests - d.thirdPartyRequests);
                           return (
-                            <div className=" text-white p-3 rounded-lg shadow-xl border border-slate-800 text-xs font-mono space-y-1 min-w-[210px] bg-[#1D1D1F]">
-                              <div className="font-bold text-white pb-1 border-b border-slate-700">{d.name}</div>
-                              <div className="flex justify-between gap-4 text-slate-300">
-                                <span className="text-sky-400">1st Party Requests:</span>
-                                <span className="font-bold text-white">{firstParty}</span>
+                            <div className="bg-[#fffef9] text-stone-800 p-3 rounded-lg shadow-xl border border-[#e5dcc8] text-xs font-mono space-y-1 min-w-[210px]">
+                              <div className="font-bold text-stone-900 pb-1 border-b border-stone-200">{d.name}</div>
+                              <div className="flex justify-between gap-4 text-stone-600">
+                                <span className="text-sky-700">1st Party Requests:</span>
+                                <span className="font-bold text-stone-900">{firstParty}</span>
                               </div>
-                              <div className="flex justify-between gap-4 text-slate-300">
-                                <span className="text-amber-400">3rd Party Requests:</span>
-                                <span className="font-bold text-white">{d.thirdPartyRequests}</span>
+                              <div className="flex justify-between gap-4 text-stone-600">
+                                <span className="text-amber-700">3rd Party Requests:</span>
+                                <span className="font-bold text-stone-900">{d.thirdPartyRequests}</span>
                               </div>
-                              <div className="flex justify-between gap-4 text-slate-300 pt-1 border-t border-slate-800">
-                                <span className="font-bold text-white">Total Requests:</span>
-                                <span className="font-bold text-sky-300">{d.totalRequests}</span>
+                              <div className="flex justify-between gap-4 text-stone-600 pt-1 border-t border-stone-200">
+                                <span className="font-bold text-stone-900">Total Requests:</span>
+                                <span className="font-bold text-sky-700">{d.totalRequests}</span>
                               </div>
-                              <div className="flex justify-between gap-4 text-slate-300">
+                              <div className="flex justify-between gap-4 text-stone-600">
                                 <span>3rd Party Ratio:</span>
-                                <span className="font-bold text-rose-400">{d.thirdPartyRatioPct}%</span>
+                                <span className="font-bold text-rose-700">{d.thirdPartyRatioPct}%</span>
                               </div>
                             </div>
                           );
@@ -279,7 +279,7 @@ export default function PageSizeAndRequests() {
                     <Legend
                       verticalAlign="top"
                       align="right"
-                      wrapperStyle={{ paddingBottom: "10px", fontSize: "11px", fontFamily: "monospace", color: "#ffffff" }}
+                      wrapperStyle={{ paddingBottom: "10px", fontSize: "11px", fontFamily: "monospace", color: "#57534e" }}
                     />
                     <Bar
                       dataKey="firstPartyRequests"
