@@ -9,6 +9,13 @@
  *
  * Usage:
  *   node audit-resumable.js --sites sites.json --runs 3 --out results.json
+ *   node audit-resumable.js --sites sites.json --runs 3 --out results.json --max-passes 5
+ *
+ * Failure policy: a site that fails all its runs is skipped (not saved) and
+ * the audit moves on to the next site. Remaining sites are retried on up to
+ * MAX_PASSES passes; anything still failing after that is reported at the end
+ * while everything that succeeded is kept. The run never aborts early because
+ * of one bad site.
  */
 
 let chromeLauncher;
@@ -35,6 +42,7 @@ const { values: args } = parseArgs({
     runs:          { type: "string", default: "3" },
     out:           { type: "string", default: "results.json" },
     concurrency:   { type: "string", default: "1" },
+    "max-passes":  { type: "string", default: "3" },
     "chrome-path": { type: "string", default: "" },
     upload:        { type: "boolean", default: false },
     "no-upload":   { type: "boolean", default: false },
@@ -50,6 +58,7 @@ const SITES_FILE  = args.sites;
 const NUM_RUNS    = parsePositiveInt(args.runs, 3);
 const OUT_FILE    = args.out;
 const CONCURRENCY = parsePositiveInt(args.concurrency, 1);
+const MAX_PASSES  = parsePositiveInt(args["max-passes"], 3);
 const CHROME_PATH = args["chrome-path"] || process.env.CHROME_PATH || "";
 if (CHROME_PATH) process.env.CHROME_PATH = CHROME_PATH;
 
@@ -429,11 +438,25 @@ async function main() {
   console.log(`   Already done: ${skipped}${skipped ? " (skipping)" : ""}`);
   console.log(`   To audit:     ${initialTodo.length}`);
   console.log(`   Runs/site:    ${NUM_RUNS}`);
+  console.log(`   Max passes:   ${MAX_PASSES}`);
   console.log(`   Output:       ${OUT_FILE}\n`);
 
+  let pass = 0;
   while (!shutdownRequested) {
     const todo = sites.filter((s) => !resultsMap[s.url]);
     if (!todo.length) break;
+
+    pass++;
+    if (pass > MAX_PASSES) {
+      const remaining = sites.filter((s) => !resultsMap[s.url]).map((s) => s.name);
+      console.warn(`\n⚠ ${remaining.length} site(s) still unsaved after ${MAX_PASSES} pass(es):\n   ${remaining.join(", ")}\n   Progress saved — re-run later to retry them.\n`);
+      break;
+    }
+    if (pass > 1) {
+      console.log(`\n↻ Retry pass ${pass}/${MAX_PASSES}: ${todo.length} site(s) remaining… (waiting 30s for transient issues to clear)`);
+      await new Promise((r) => setTimeout(r, 30000));
+      if (shutdownRequested) break;
+    }
 
     const queue = [...todo];
     let active  = 0;
@@ -464,8 +487,10 @@ async function main() {
                 console.log("🛑 Shutdown: remaining sites skipped. Progress saved.");
               }
 
-              if (active === 0) resolve();
-              else next();
+              // Keep the pump primed: resolve the pass only after the queue
+              // is drained and idle. Otherwise one site ends the whole pass.
+              if (!stopped && queue.length) next();
+              else if (active === 0) resolve();
             });
         }
         if (active === 0) resolve();
@@ -475,13 +500,12 @@ async function main() {
 
     if (shutdownRequested) break;
 
-    // If a full pass produced zero new results, the remaining sites are
-    // failing persistently (blocked bots, dead hosts, etc.). Stop rather than
-    // looping forever; they can be retried on a later run.
+    // A pass that saves nothing just means the remaining sites are failing
+    // persistently right now (blocked bots, dead hosts, transient flakiness).
+    // Keep going until passes run out — never abort the whole audit early.
     if (savedThisPass === 0) {
-      const remaining = sites.filter((s) => !resultsMap[s.url]).map((s) => s.name);
-      console.warn(`\n⚠ No sites completed this pass. ${remaining.length} site(s) remain unsaved:\n   ${remaining.join(", ")}\n   Stopping to avoid an infinite retry loop — re-run to retry them.\n`);
-      break;
+      const remaining = sites.filter((s) => !resultsMap[s.url]).length;
+      console.warn(`   ⚠ Pass ${pass}/${MAX_PASSES} completed 0 new sites (${remaining} remain) — ${pass < MAX_PASSES ? "will retry on next pass." : "out of passes, wrapping up."}`);
     }
   }
 
