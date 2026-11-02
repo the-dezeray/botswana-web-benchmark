@@ -2,3 +2,4 @@ node_modules/
 .lighthouse-temp/
 results*.json
 *.log
+bench-*.json

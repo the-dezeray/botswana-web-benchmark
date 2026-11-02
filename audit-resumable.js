@@ -46,6 +46,7 @@ const { values: args } = parseArgs({
     "chrome-path": { type: "string", default: "" },
     upload:        { type: "boolean", default: false },
     "no-upload":   { type: "boolean", default: false },
+    verbose:       { type: "boolean", default: false },
   },
 });
 
@@ -61,6 +62,12 @@ const CONCURRENCY = parsePositiveInt(args.concurrency, 1);
 const MAX_PASSES  = parsePositiveInt(args["max-passes"], 3);
 const CHROME_PATH = args["chrome-path"] || process.env.CHROME_PATH || "";
 if (CHROME_PATH) process.env.CHROME_PATH = CHROME_PATH;
+const VERBOSE     = args.verbose;
+
+// ─── Timing instrumentation (--verbose) ──────────────────────────────────────
+// Pure measurement: no effect on audit behaviour or results.
+const TIMING = { chromeLaunchMs: 0, chromeLaunches: 0, lighthouseMs: 0, lighthouseRuns: 0, sleepMs: 0 };
+function fmtSecs(ms) { return (ms / 1000).toFixed(1); }
 
 // ─── Graceful shutdown flag ───────────────────────────────────────────────────
 let shutdownRequested = false;
@@ -72,7 +79,7 @@ process.on("SIGINT", () => {
     forceQuitArmed = true;
   } else if (forceQuitArmed) {
     console.log("\n🛑 Force quit.");
-    process.exit(1);
+    closeBrowser().finally(() => process.exit(1));
   }
 });
 process.on("SIGTERM", () => { if (!shutdownRequested) { console.log("\n⚠  SIGTERM received — finishing current site then saving…"); shutdownRequested = true; } });
@@ -86,7 +93,12 @@ const LIGHTHOUSE_FLAGS = {
   formFactor: "mobile",
   screenEmulation: { mobile: true, width: 360, height: 640, deviceScaleFactor: 2, disabled: false },
   throttlingMethod: "simulate",
- 
+  // Bound the gatherer: a hanging page used to burn the 45s default on every
+  // attempt, and the full-page screenshot gatherer is the expensive part on
+  // multi-MB pages. None of our reported metrics come from either.
+  maxWaitForLoad: 20000,
+  maxWaitForFcp: 15000,
+  disableFullPageScreenshot: true,
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -155,9 +167,12 @@ function saveResults(outFile, allSites, resultsMap) {
   fs.writeFileSync(outFile, JSON.stringify(output, null, 2));
 }
 
-// ─── Chrome lifecycle (one instance shared across a site's runs, relaunched
-//     on failure — concurrent Chrome instances can flake intermittently)
+// ─── Chrome lifecycle ────────────────────────────────────────────────────────
+// One Chrome instance is reused across sites: launching per site costs ~0.6–1.3s
+// and leaks temp profiles on Windows. It is recycled every N runs to bound
+// memory growth, and relaunched after a failed run.
 const RETRIES_PER_RUN = 3;
+const CHROME_RECYCLE_EVERY_RUNS = 30;
 const LIGHTHOUSE_CHROME_FLAGS = [
   "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
   "--no-first-run", "--disable-extensions", "--disable-background-networking",
@@ -171,14 +186,56 @@ function makeTmpDir() {
 
 async function launchChrome(tmpDir) {
   const launch = await getChromeLauncher();
-  return launch({
+  const startedAt = performance.now();
+  const chrome = await launch({
     chromePath: CHROME_PATH || undefined,
     chromeFlags: [...LIGHTHOUSE_CHROME_FLAGS, `--user-data-dir=${tmpDir}`],
   });
+  const ms = performance.now() - startedAt;
+  TIMING.chromeLaunchMs += ms;
+  TIMING.chromeLaunches++;
+  if (VERBOSE) console.log(`   ⏱ chrome launch ${fmtSecs(ms)}s (port ${chrome.port})`);
+  return chrome;
 }
 
-function scheduleCleanup(tmpDir) {
-  setTimeout(() => { try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ } }, 2000);
+// chrome-launcher resolves before the DevTools endpoint accepts connections,
+// which showed up as "connect ECONNREFUSED 127.0.0.1:<port>" in past runs.
+async function waitForChrome(port, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(1000) });
+      if (res.ok) return;
+    } catch { /* not listening yet */ }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(`Chrome on port ${port} was not ready within ${timeoutMs}ms`);
+}
+
+let sharedBrowser = null;   // { chrome, tmpDir, uses }
+
+async function getBrowser() {
+  if (sharedBrowser && sharedBrowser.uses >= CHROME_RECYCLE_EVERY_RUNS) {
+    if (VERBOSE) console.log(`   ⏱ recycling Chrome after ${sharedBrowser.uses} runs`);
+    await closeBrowser();
+  }
+  if (!sharedBrowser) {
+    const tmpDir = makeTmpDir();
+    fs.mkdirSync(tmpDir, { recursive: true });
+    const chrome = await launchChrome(tmpDir);
+    await waitForChrome(chrome.port);
+    sharedBrowser = { chrome, tmpDir, uses: 0 };
+  }
+  sharedBrowser.uses++;
+  return sharedBrowser;
+}
+
+async function closeBrowser() {
+  if (!sharedBrowser) return;
+  const { chrome, tmpDir } = sharedBrowser;
+  sharedBrowser = null;
+  try { await chrome.kill(); } catch { /* ignore */ }
+  try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
 }
 
 // ─── Lighthouse audit (performance + network, single pass) ───────────────────
@@ -267,12 +324,10 @@ function representativeLargestResources(networkTrials) {
 // ─── Per-site runner ──────────────────────────────────────────────────────────
 async function auditSite(site) {
   const { name, url, industry } = site;
+  const siteStart = performance.now();
   console.log(`\n▶  ${name} (${url})`);
 
   const perfTrials = [], networkTrials = [];
-  let tmpDir = makeTmpDir();
-  fs.mkdirSync(tmpDir, { recursive: true });
-  let chrome = await launchChrome(tmpDir);
 
   try {
     for (let i = 1; i <= NUM_RUNS; i++) {
@@ -280,28 +335,34 @@ async function auditSite(site) {
       let ok = false;
       for (let attempt = 1; attempt <= RETRIES_PER_RUN && !ok; attempt++) {
         try {
+          const runStart = performance.now();
+          const { chrome } = await getBrowser();
           const { perf, network } = await runLighthouse(url, chrome);
+          const runMs = performance.now() - runStart;
+          TIMING.lighthouseMs += runMs;
+          TIMING.lighthouseRuns++;
           perfTrials.push(perf);
           networkTrials.push(network);
-          console.log(`     Score: ${perf.performanceScore}  LCP: ${perf.lcp ?? "n/a"}s  TBT: ${perf.tbt ?? "n/a"}ms  |  ${network.totalSizeKB} KB / ${network.totalRequests} reqs`);
+          console.log(`     Score: ${perf.performanceScore}  LCP: ${perf.lcp ?? "n/a"}s  TBT: ${perf.tbt ?? "n/a"}ms  |  ${network.totalSizeKB} KB / ${network.totalRequests} reqs${VERBOSE ? `  ⏱ ${fmtSecs(runMs)}s` : ""}`);
           ok = true;
         } catch (e) {
           console.warn(`     ✗ Lighthouse run failed: ${e.message}${attempt < RETRIES_PER_RUN ? " (retrying with a fresh Chrome)" : ""}`);
           if (attempt < RETRIES_PER_RUN) {
-            try { await chrome.kill(); } catch { /* ignore */ }
-            scheduleCleanup(tmpDir);
-            tmpDir = makeTmpDir();
-            fs.mkdirSync(tmpDir, { recursive: true });
-            chrome = await launchChrome(tmpDir);
+            await closeBrowser();
           }
         }
       }
-      if (i < NUM_RUNS) await new Promise((r) => setTimeout(r, 2000));
+      if (i < NUM_RUNS) {
+        const sleepStart = performance.now();
+        await new Promise((r) => setTimeout(r, 250));
+        TIMING.sleepMs += performance.now() - sleepStart;
+      }
     }
   } finally {
-    try { await chrome.kill(); } catch { /* ignore */ }
-    scheduleCleanup(tmpDir);
+    // The shared Chrome outlives this site; it is recycled by getBrowser().
   }
+
+  if (VERBOSE) console.log(`   ⏱ site total ${fmtSecs(performance.now() - siteStart)}s`);
 
   if (!perfTrials.length) {
     console.warn(`   ⚠ No successful Lighthouse run for ${name} — not saving so it retries next time.`);
@@ -517,7 +578,17 @@ async function main() {
   saveResults(OUT_FILE, sites, resultsMap);
   console.log(`\n✅ Audit complete in ${mins ? `${mins}m ` : ""}${secs}s. Results saved to ${OUT_FILE}`);
 
+  if (VERBOSE) {
+    console.log(`\n⏱  Timing breakdown`);
+    console.log(`   Chrome launches: ${TIMING.chromeLaunches} in ${fmtSecs(TIMING.chromeLaunchMs)}s`);
+    console.log(`   Lighthouse runs: ${TIMING.lighthouseRuns} in ${fmtSecs(TIMING.lighthouseMs)}s`);
+    console.log(`   Inter-run sleep: ${fmtSecs(TIMING.sleepMs)}s`);
+    console.log(`   Other/overhead:  ${fmtSecs(Math.max(0, (Date.now() - startedAt) - TIMING.chromeLaunchMs - TIMING.lighthouseMs - TIMING.sleepMs))}s`);
+    console.log(`   Wall clock:      ${fmtSecs(Date.now() - startedAt)}s\n`);
+  }
+
   const ordered = sites.map((s) => resultsMap[s.url]).filter(Boolean);
+  await closeBrowser();
   await maybeShare({
     meta: { ...buildMeta(sites.length, NUM_RUNS), duration_seconds: elapsedSeconds },
     summary: buildSummary(ordered),
@@ -525,4 +596,4 @@ async function main() {
   });
 }
 
-main().catch((e) => { console.error("Fatal:", e); process.exit(1); });
+main().catch(async (e) => { console.error("Fatal:", e); await closeBrowser(); process.exit(1); });

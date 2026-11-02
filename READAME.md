@@ -30,12 +30,18 @@ Alternatively, use the helper script included in the repo:
 ### Performance notes
 
 - Audits run with **simulated throttling** (`throttlingMethod: "simulate"`) for deterministic timings.
-- Each site reuses a single headless Chrome instance for all its runs; `--concurrency N` runs N sites in parallel, each with its own Chrome instance and temp profile. Tune with `--concurrency` (watch RAM: each Chrome uses ~200–400 MB).
+- A **single headless Chrome instance is reused across sites** and recycled every 30 runs to bound memory. Launching per site cost ~1 s each and leaked temp profiles on Windows.
+- Chrome readiness is polled before the first run, which removes the intermittent `connect ECONNREFUSED 127.0.0.1:<port>` failures.
+- Page waits are bounded: `maxWaitForLoad` 20 s and `maxWaitForFcp` 15 s (defaults are 45 s / 30 s), so a hanging site can't stall the queue.
+- The full-page screenshot gatherer is disabled (`disableFullPageScreenshot: true`). None of the reported metrics come from it, and it is the most expensive phase on multi-MB pages.
 - Chrome launches lean: extensions, background networking, component updates, and sync are disabled.
+- `--verbose` prints per-phase timings (Chrome launch, each Lighthouse run, sleeps) plus a run summary.
+- `--concurrency N` runs N sites in parallel, each with its own Chrome instance and temp profile. **It is not recommended for published numbers:** `simulate` throttling traces the page on the real CPU, so parallel runs inflate TBT/TTI and shift scores relative to a sequential baseline.
 
 ### Notes
 
 - The one-liner sets `CHROME_PATH` from Playwright's installed Chromium and runs the quick audit (1 run per site).
+- **Use Playwright's Chromium, not your system Chrome.** Lighthouse 12.8.2's bundled trace engine crashes on Chrome 156 (`LanternComputationData.js` → `Cannot read properties of undefined (reading 'url')`), producing an LHR with score 0. Playwright's `chromium-1243` build (153.0.8010.12) is the version this benchmark was produced with.
 - Use the helper script if permission issues occur.
 - For CI, set `CHROME_PATH` in your environment before running audits.
 - Quick audit output is written to `results_quick.json`; the frontend reads this file.
