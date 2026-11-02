@@ -1,6 +1,6 @@
 # Botswana Web Performance Auditor
 
-Web performance auditor for Botswana company websites. Runs Lighthouse audits against the sites listed in `sites.json` and renders the results in a React frontend.
+Web performance auditor for Botswana company websites. Runs Lighthouse audits against the sites listed in `sites.json` and renders the results in a Next.js dashboard.
 
 ## Backend / Auditing
 
@@ -50,7 +50,7 @@ Alternatively, use the helper script included in the repo:
 ### Notes
 
 - The one-liner sets `CHROME_PATH` from Playwright's installed Chromium and runs the quick audit (1 run per site).
-- **Use Playwright's Chromium, not your system Chrome.** Lighthouse 12.8.2's bundled trace engine crashes on Chrome 156 (`LanternComputationData.js` → `Cannot read properties of undefined (reading 'url')`), producing an LHR with score 0. Playwright's `chromium-1243` build (153.0.8010.12) is the version this benchmark was produced with.
+- **Use Playwright's Chromium, not a bleeding-edge system Chrome.** Lighthouse 12.8.2's bundled trace engine crashes on Chrome 156 (`LanternComputationData.js` → `Cannot read properties of undefined (reading 'url')`), producing an LHR with score 0. Playwright's bundled Chromium 147 and 153 both work.
 - Use the helper script if permission issues occur.
 - For CI, set `CHROME_PATH` in your environment before running audits.
 - Quick audit output is written to `results_quick.json`; the frontend reads this file.
@@ -71,35 +71,36 @@ At the end of an audit you'll be asked whether to share **anonymous** results (s
 
 Data is insert-only: the anon key cannot read anything back.
 
-## Frontend (React + Vite + Tailwind)
+## Frontend (Next.js + Tailwind)
 
-Located in `frontend/`. A Vite/React dashboard that visualizes the audit results from `results_quick.json`.
+Located in `next-app/`. A Next.js dashboard that visualizes the audit results from `results_quick.json`.
 
 ### Startup
 
 ```bash
-cd frontend
+cd next-app
 npm install
 npm run dev
 ```
 
-The dev server runs at `http://localhost:5173` and reads `/results_quick.json` from `frontend/public/`.
+The dev server runs at `http://localhost:3000`.
 
 ### Refreshing the displayed data
 
-After running a quick audit, copy the latest results into the frontend's public directory:
+After running a quick audit, copy the latest results into the app's public directory:
 
 ```bash
 npm run update-data
 ```
 
-This copies `../results_quick.json` into `frontend/public/results_quick.json`.
+This copies `results_quick.json` into `next-app/public/results_quick.json`.
 
-### Build & preview
+### Build & run
 
 ```bash
-npm run build     # type-check + production build (outputs to dist/)
-npm run preview   # preview the production build locally
+cd next-app
+npm run build
+npm start
 ```
 
 ### Other scripts
