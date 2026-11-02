@@ -107,6 +107,13 @@ export default function PerformanceChart() {
     return data.slice(0, filterLimit);
   }, [data, filterLimit]);
 
+  const smallestBySize = useMemo(() => {
+    return [...data]
+      .filter((item) => item.totalSizeKB > 0)
+      .sort((a, b) => a.totalSizeKB - b.totalSizeKB)
+      .slice(0, 10);
+  }, [data]);
+
   const stats = useMemo(() => {
     if (!data.length) return { avg: "0", top: "N/A", topScore: 0, total: 0 };
     const sum = data.reduce((acc, curr) => acc + curr.score, 0);
@@ -140,6 +147,60 @@ export default function PerformanceChart() {
         widthMode === "full" ? "max-w-[98vw]" : widthMode === "ultra" ? "max-w-[100vw]" : "max-w-7xl"
       }`}>
         
+        {/* Summary tables */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+          <div>
+            <h3 className="text-[11px] font-mono uppercase tracking-[0.2em] text-stone-500 mb-2">
+              Top 10 by performance
+            </h3>
+            <ol>
+              {data.slice(0, 10).map((item) => (
+                <li
+                  key={`top-${item.name}`}
+                  className="flex items-baseline justify-between gap-3 py-1.5 border-b border-[#e5dcc8] last:border-0"
+                >
+                  <span className="flex min-w-0 items-baseline gap-2.5">
+                    <span className="w-6 shrink-0 font-mono text-xs text-stone-400">
+                      {item.rank}
+                    </span>
+                    <span className="truncate text-sm text-stone-800">
+                      {item.name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-mono text-xs font-semibold text-stone-900">
+                    {Math.round(item.score)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <h3 className="text-[11px] font-mono uppercase tracking-[0.2em] text-stone-500 mb-2">
+              Smallest 10 by page size
+            </h3>
+            <ol>
+              {smallestBySize.map((item, index) => (
+                <li
+                  key={`small-${item.name}`}
+                  className="flex items-baseline justify-between gap-3 py-1.5 border-b border-[#e5dcc8] last:border-0"
+                >
+                  <span className="flex min-w-0 items-baseline gap-2.5">
+                    <span className="w-6 shrink-0 font-mono text-xs text-stone-400">
+                      {index + 1}
+                    </span>
+                    <span className="truncate text-sm text-stone-800">
+                      {item.name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-mono text-xs font-semibold text-stone-900">
+                    {(item.totalSizeKB / 1024).toFixed(1)} MB
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="border-b border-[#0A2ADB]/15 pb-4 flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
           <div>

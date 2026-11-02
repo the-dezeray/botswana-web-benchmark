@@ -18,7 +18,14 @@ const gridImages = Array.from({ length: 24 }).map(
   (_, i) => baseImages[i % baseImages.length]
 );
 
-export default function HeroSection() {
+export default function HeroSection({ auditDate }: { auditDate?: string }) {
+  const auditLabel = auditDate
+    ? new Date(auditDate).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : null;
   return (
     <section className="relative w-full h-screen overflow-hidden flex flex-col justify-center items-center bg-[#f7f2e7] text-[#1c1917]">
       {/* Mesh Texture Overlay */}
@@ -63,11 +70,13 @@ export default function HeroSection() {
           </p>
         </div>
 
-        <div className="absolute bottom-6 left-6 z-10 rounded-lg border border-white/10 bg-[#FDE68A]  px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-sm">
-          <div className="text-[12px] md:text-[13px] text-black font-mono tracking-wide">
-           August 2026
+        {auditLabel && (
+          <div className="absolute bottom-6 left-6 z-10 rounded-lg border border-black/10 bg-[#FDE68A] px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+            <div className="text-[12px] md:text-[13px] text-black font-mono tracking-wide">
+              {auditLabel}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 2. 12x2 Grid (32px by 32px photos) */}
         <div className="grid grid-cols-12 gap-[6px] mb-14">

@@ -37,6 +37,11 @@ const PageWeightCorrelation = dynamic(
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
+const SiteExplorer = dynamic(
+  () => import("@/components/SiteExplorer"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+
 const SiteSizeAndSpeedRanking = dynamic(
   () => import("@/components/SiteSizeAndSpeedRanking"),
   { ssr: false, loading: () => <ChartSkeleton /> }
@@ -50,6 +55,8 @@ export default function ChartSection({ siteData }: Props) {
   return (
     <>
       <PerformanceChart />
+
+      <SiteExplorer />
 
    <section className="w-full px-6 py-8 sm:px-10 lg:px-12">
   <div className="relative overflow-hidden rounded-[24px] border border-black/10 bg-[#FDE68A] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">

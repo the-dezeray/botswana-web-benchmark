@@ -1,9 +1,10 @@
 'use client'
 
-import { Zap, Heart, Package, Timer, TrendingUp, BarChart2 } from 'lucide-react'
+import { Zap, Search, Heart, Package, Timer, TrendingUp, BarChart2 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { id: 'performance-chart', label: 'Performance', icon: Zap },
+  { id: 'site-explorer', label: 'Site Detail', icon: Search },
   { id: 'core-web-vitals', label: 'Web Vitals', icon: Heart },
   { id: 'page-size-requests', label: 'Page Size', icon: Package },
   { id: 'tti-si-tbt', label: 'Load Time', icon: Timer },

@@ -3,26 +3,29 @@ import path from "path";
 import HeroSection from "@/app/components/HeroSection";
 import ChartSection from "@/app/components/ChartSection";
 
-// Read ranking data once on the server — no client fetch needed for this
-function getSiteData(): any[] {
+// Read audit data once on the server — no client fetch needed for this
+function getAuditData(): { ranking: any[]; generatedAt?: string } {
   try {
     const filePath = path.join(process.cwd(), "public/results_quick.json");
     const raw = fs.readFileSync(filePath, "utf-8");
     const json = JSON.parse(raw);
-    return json?.summary?.ranking ?? [];
+    return {
+      ranking: json?.summary?.ranking ?? [],
+      generatedAt: json?.meta?.generated_at,
+    };
   } catch {
-    return [];
+    return { ranking: [] };
   }
 }
 
 export default function Home() {
-  const siteData = getSiteData();
+  const { ranking: siteData, generatedAt } = getAuditData();
 
   return (
     <main className="relative w-full min-h-screen bg-[#f7f2e7] text-[#1c1917] font-ibm-plex-mono">
 
       {/* Hero — client island (cycling images + clipboard) */}
-      <HeroSection />
+      <HeroSection auditDate={generatedAt} />
 
       {/* Charts — lazy-loaded client bundles, rendered after page shell */}
       <ChartSection siteData={siteData} />
