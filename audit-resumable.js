@@ -115,13 +115,11 @@ const LIGHTHOUSE_FLAGS = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function dropOutliers(values) {
-  if (values.length < 4) return values;
+function median(values) {
+  if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
-  const q1 = sorted[Math.floor(sorted.length * 0.25)];
-  const q3 = sorted[Math.floor(sorted.length * 0.75)];
-  const iqr = q3 - q1;
-  return sorted.filter((v) => v >= q1 - 1.5 * iqr && v <= q3 + 1.5 * iqr);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 function mean(arr)         { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null; }
 function round(n, dp = 2)  { return n == null ? null : +n.toFixed(dp); }
@@ -506,22 +504,22 @@ async function auditSite(site) {
   const lighthouse_avg = {};
   for (const key of perfKeys) {
     const vals = perfTrials.map((t) => t[key]).filter((v) => v != null);
-    lighthouse_avg[key] = round(mean(dropOutliers(vals)), key === "tbt" ? 0 : key === "cls" ? 3 : 2);
+    lighthouse_avg[key] = round(median(vals), key === "tbt" ? 0 : key === "cls" ? 3 : 2);
   }
 
   const netKeys = ["totalSizeKB", "totalRequests", "thirdPartyRequests", "thirdPartyRatio"];
   const network_avg = {};
   for (const key of netKeys) {
     const vals = networkTrials.map((t) => t[key]).filter((v) => v != null);
-    network_avg[key] = round(mean(dropOutliers(vals)), key === "thirdPartyRatio" ? 3 : 1);
+    network_avg[key] = round(median(vals), key === "thirdPartyRatio" ? 3 : 1);
   }
 
   const allCategories = [...new Set(networkTrials.flatMap((t) => Object.keys(t.byCategory || {})))];
   const byCategory_avg = {};
   for (const cat of allCategories) {
     byCategory_avg[cat] = {
-      count:  round(mean(dropOutliers(networkTrials.map((t) => t.byCategory?.[cat]?.count ?? 0))), 0),
-      sizeKB: round(mean(dropOutliers(networkTrials.map((t) => t.byCategory?.[cat]?.sizeKB ?? 0))), 1),
+      count:  round(median(networkTrials.map((t) => t.byCategory?.[cat]?.count ?? 0)), 0),
+      sizeKB: round(median(networkTrials.map((t) => t.byCategory?.[cat]?.sizeKB ?? 0)), 1),
     };
   }
 
@@ -541,7 +539,7 @@ function buildMeta(siteCount, runs) {
     generated_at: new Date().toISOString(),
     tool_versions: { lighthouse: "12.x" },
     methodology: "mobile-simulated, lighthouse-only (simulated throttling; network data from network-requests audit)",
-    runs_per_site: runs, outlier_method: "IQR", sites_audited: siteCount,
+    runs_per_site: runs, outlier_method: "median", sites_audited: siteCount, concurrency: CONCURRENCY,
   };
 }
 

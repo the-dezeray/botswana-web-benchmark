@@ -30,6 +30,7 @@ Alternatively, use the helper script included in the repo:
 ### Performance notes
 
 - Audits run with **simulated throttling** (`throttlingMethod: "simulate"`) for deterministic timings.
+- Each site's metrics are the **median of its runs** (default 3). The previous mean + IQR filter never actually dropped anything: the filter needs 4+ values, so 3 runs were always a plain mean.
 - A **single headless Chrome instance is reused across sites** and recycled every 30 runs to bound memory. Launching per site cost ~1 s each and leaked temp profiles on Windows.
 - Chrome readiness is polled before the first run, which removes the intermittent `connect ECONNREFUSED 127.0.0.1:<port>` failures.
 - Page waits are bounded: `maxWaitForLoad` 20 s and `maxWaitForFcp` 15 s (defaults are 45 s / 30 s), so a hanging site can't stall the queue.
