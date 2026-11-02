@@ -38,6 +38,14 @@ Alternatively, use the helper script included in the repo:
 - `--verbose` prints per-phase timings (Chrome launch, each Lighthouse run, sleeps) plus a run summary.
 - `--concurrency N` runs N sites in parallel, each with its own Chrome instance and temp profile. **It is not recommended for published numbers:** `simulate` throttling traces the page on the real CPU, so parallel runs inflate TBT/TTI and shift scores relative to a sequential baseline.
 
+### Failure handling
+
+- A cheap HTTP **preflight** runs before any Chrome work. A connection-level failure (DNS, refused, reset, bad certificate) starts that site on a single, time-capped run instead of 3 runs × 3 attempts. A timeout is treated as ambiguous (slow site, not dead) and audited normally.
+- Retries are per failure class: transport 3, degenerate LHR 1, other 2.
+- Two degenerate LHRs (0 requests or no paint) abandon the site: bot-blocked hosts used to burn ~2 minutes each.
+- A 90 s budget applies only until a site produces its first result, so genuinely heavy pages (20 MB) still finish all runs.
+- Unsaved sites and their reasons are written to `meta.failed_sites`. On later runs, sites marked `unreachable` or `blocked` are skipped for 7 days; `--force` re-tries them immediately.
+
 ### Notes
 
 - The one-liner sets `CHROME_PATH` from Playwright's installed Chromium and runs the quick audit (1 run per site).

@@ -47,6 +47,7 @@ const { values: args } = parseArgs({
     upload:        { type: "boolean", default: false },
     "no-upload":   { type: "boolean", default: false },
     verbose:       { type: "boolean", default: false },
+    force:         { type: "boolean", default: false },
   },
 });
 
@@ -63,10 +64,22 @@ const MAX_PASSES  = parsePositiveInt(args["max-passes"], 3);
 const CHROME_PATH = args["chrome-path"] || process.env.CHROME_PATH || "";
 if (CHROME_PATH) process.env.CHROME_PATH = CHROME_PATH;
 const VERBOSE     = args.verbose;
+const FORCE       = args.force;
+
+// ─── Failure policy ──────────────────────────────────────────────────────────
+// Past runs burned ~120-160s per dead site (3 runs x 3 attempts, each attempt
+// relaunching Chrome). A cheap reachability probe plus per-class retry limits
+// and an early bail-out cut that to ~30-60s while keeping real sites intact.
+const PREFLIGHT_TIMEOUT_MS = 8000;
+const SITE_BUDGET_MS       = 90000;   // only applies until the first run succeeds
+const DEGENERATE_GIVE_UP   = 2;       // degenerate LHRs before abandoning a site
+const KNOWN_BAD_TTL_MS     = 7 * 24 * 60 * 60 * 1000;
+const RETRIES_BY_CLASS     = { transport: 3, degenerate: 1, other: 2 };
+const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36";
 
 // ─── Timing instrumentation (--verbose) ──────────────────────────────────────
 // Pure measurement: no effect on audit behaviour or results.
-const TIMING = { chromeLaunchMs: 0, chromeLaunches: 0, lighthouseMs: 0, lighthouseRuns: 0, sleepMs: 0 };
+const TIMING = { chromeLaunchMs: 0, chromeLaunches: 0, lighthouseMs: 0, lighthouseRuns: 0, failedRunMs: 0, failedRuns: 0, sleepMs: 0 };
 function fmtSecs(ms) { return (ms / 1000).toFixed(1); }
 
 // ─── Graceful shutdown flag ───────────────────────────────────────────────────
@@ -142,6 +155,64 @@ function isThirdParty(resourceUrl, siteOrigin) {
   } catch { return false; }
 }
 
+// ─── Failure classification ──────────────────────────────────────────────────
+function classifyFailure(e) {
+  const msg = String(e?.message ?? e);
+  if (/degenerate LHR/i.test(msg)) return "degenerate";
+  if (/ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|connect |no chrome|Chrome on port/i.test(msg)) return "transport";
+  return "other";
+}
+
+// Cheap reachability probe run before any Chrome/Lighthouse work. Only a
+// connection-level failure counts as a signal: any HTTP status means the host
+// is alive (many sites 403 bots but still render in Chrome), and a timeout is
+// ambiguous (could be a slow site, e.g. Choppies), so neither is treated as dead.
+async function preflight(url) {
+  const startedAt = performance.now();
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      signal: AbortSignal.timeout(PREFLIGHT_TIMEOUT_MS),
+      headers: { "user-agent": BROWSER_UA, accept: "text/html,application/xhtml+xml,*/*" },
+    });
+    try { await res.body?.cancel(); } catch { /* ignore */ }
+    return { ok: true, status: res.status, ms: performance.now() - startedAt };
+  } catch (e) {
+    const code = e?.cause?.code || e?.code || "";
+    const timedOut = e?.name === "TimeoutError" || /TIMEOUT/i.test(code);
+    return {
+      ok: false,
+      kind: timedOut ? "timeout" : "connection",
+      reason: timedOut
+        ? `timeout after ${PREFLIGHT_TIMEOUT_MS}ms`
+        : `${e?.message || e?.name || "fetch failed"}${code ? ` (${code})` : ""}`,
+      ms: performance.now() - startedAt,
+    };
+  }
+}
+
+// Failures persist into meta.failed_sites so a later run can skip sites that are
+// still dead, instead of paying the retry cost again.
+const failedSites = new Map();   // url -> { name, url, reason, at }
+
+function recordFailure(site, reason) {
+  failedSites.set(site.url, { name: site.name, url: site.url, reason, at: new Date().toISOString() });
+}
+
+function clearFailure(url) {
+  failedSites.delete(url);
+}
+
+function isRecentlyUnreachable(site) {
+  if (FORCE) return null;
+  const f = failedSites.get(site.url);
+  if (!f) return null;
+  if (!/^(unreachable|blocked)/.test(f.reason || "")) return null;   // transient reasons are always retried
+  const age = Date.now() - Date.parse(f.at);
+  if (!Number.isFinite(age) || age > KNOWN_BAD_TTL_MS) return null;
+  return f;
+}
+
 // ─── Persist helpers ──────────────────────────────────────────────────────────
 function loadExistingResults(outFile) {
   if (!fs.existsSync(outFile)) return {};
@@ -157,10 +228,23 @@ function loadExistingResults(outFile) {
   }
 }
 
+function loadExistingFailures(outFile) {
+  if (!fs.existsSync(outFile)) return;
+  try {
+    const data = JSON.parse(fs.readFileSync(outFile, "utf8"));
+    for (const f of data?.meta?.failed_sites ?? []) if (f?.url) failedSites.set(f.url, f);
+  } catch { /* loadExistingResults already warned about this file */ }
+}
+
 function saveResults(outFile, allSites, resultsMap) {
   const ordered = allSites.map((s) => resultsMap[s.url]).filter(Boolean);
   const output = {
-    meta:    buildMeta(allSites.length, NUM_RUNS),
+    meta: {
+      ...buildMeta(allSites.length, NUM_RUNS),
+      failed_sites: [...failedSites.values()]
+        .filter((f) => !resultsMap[f.url])
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    },
     summary: buildSummary(ordered),
     results: ordered,
   };
@@ -171,7 +255,6 @@ function saveResults(outFile, allSites, resultsMap) {
 // One Chrome instance is reused across sites: launching per site costs ~0.6–1.3s
 // and leaks temp profiles on Windows. It is recycled every N runs to bound
 // memory growth, and relaunched after a failed run.
-const RETRIES_PER_RUN = 3;
 const CHROME_RECYCLE_EVERY_RUNS = 30;
 const LIGHTHOUSE_CHROME_FLAGS = [
   "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
@@ -239,9 +322,10 @@ async function closeBrowser() {
 }
 
 // ─── Lighthouse audit (performance + network, single pass) ───────────────────
-async function runLighthouse(url, chrome) {
+async function runLighthouse(url, chrome, overrides = {}) {
   const lighthouse = await getLighthouse();
-  const runnerResult = await lighthouse(url, { ...LIGHTHOUSE_FLAGS, port: chrome.port });
+  const flags = Object.keys(overrides).length ? { ...LIGHTHOUSE_FLAGS, ...overrides } : LIGHTHOUSE_FLAGS;
+  const runnerResult = await lighthouse(url, { ...flags, port: chrome.port });
   const lhr = runnerResult?.lhr ?? runnerResult;
   if (!lhr?.categories) throw new Error("Lighthouse returned no LHR data");
 
@@ -257,11 +341,12 @@ async function runLighthouse(url, chrome) {
   };
 
   const network = extractNetworkData(lhr, url);
-  // A healthy page always produces ≥1 network request (its document). Zero
-  // requests means Lighthouse's gatherer failed (concurrent-instance flake,
-  // blocked bot, or broken LHR) — treat it as a failed run, not a score of 0.
-  if (!(network.totalRequests > 0)) {
-    throw new Error(`Lighthouse returned a degenerate LHR (0 network requests) for ${url}`);
+  // A healthy page always produces ≥1 network request (its document) and a
+  // first-contentful-paint. Zero requests means the gatherer failed (blocked
+  // bot, broken LHR); no paint means the trace engine crashed and Lighthouse
+  // still handed back an LHR full of zeros. Both are failures, not scores of 0.
+  if (!(network.totalRequests > 0) || !(perf.fcp > 0)) {
+    throw new Error(`Lighthouse returned a degenerate LHR (0 network requests or no paint) for ${url}`);
   }
   return { perf, network };
 }
@@ -327,17 +412,42 @@ async function auditSite(site) {
   const siteStart = performance.now();
   console.log(`\n▶  ${name} (${url})`);
 
+  // Cheap reachability probe before spending a Chrome launch and up to 9
+  // Lighthouse runs. A connection failure doesn't skip the site — it starts on
+  // a single run/attempt and only completes the rest if that run works.
+  const probe = await preflight(url);
+  let suspect = !probe.ok && probe.kind === "connection";
+  if (VERBOSE || !probe.ok) {
+    console.log(`   ⏱ preflight ${fmtSecs(probe.ms)}s ${probe.ok ? `HTTP ${probe.status}` : `failed: ${probe.reason}`}`);
+  }
+  if (suspect) console.log(`   ⚠ Connection failed — trying one short run before giving up`);
+
   const perfTrials = [], networkTrials = [];
+  let targetRuns = suspect ? 1 : NUM_RUNS;
+  let degenerates = 0;
+  let giveUpReason = null;
 
   try {
-    for (let i = 1; i <= NUM_RUNS; i++) {
-      console.log(`   Run ${i}/${NUM_RUNS}…`);
+    for (let i = 1; i <= targetRuns && !giveUpReason; i++) {
+      console.log(`   Run ${i}/${targetRuns}…`);
       let ok = false;
-      for (let attempt = 1; attempt <= RETRIES_PER_RUN && !ok; attempt++) {
+      let attempts = 0;
+      let maxAttempts = suspect ? 1 : 2;
+
+      while (!ok && !giveUpReason && attempts < maxAttempts) {
+        // The budget only guards sites that have not produced a single result;
+        // a healthy-but-heavy page (20 MB) must be allowed to finish its runs.
+        if (!perfTrials.length && performance.now() - siteStart > SITE_BUDGET_MS) {
+          giveUpReason = `budget exceeded after ${fmtSecs(performance.now() - siteStart)}s without a result`;
+          break;
+        }
+        attempts++;
+        const attemptStart = performance.now();
         try {
           const runStart = performance.now();
           const { chrome } = await getBrowser();
-          const { perf, network } = await runLighthouse(url, chrome);
+          const { perf, network } = await runLighthouse(url, chrome,
+            suspect ? { maxWaitForLoad: 8000, maxWaitForFcp: 5000 } : {});
           const runMs = performance.now() - runStart;
           TIMING.lighthouseMs += runMs;
           TIMING.lighthouseRuns++;
@@ -345,14 +455,30 @@ async function auditSite(site) {
           networkTrials.push(network);
           console.log(`     Score: ${perf.performanceScore}  LCP: ${perf.lcp ?? "n/a"}s  TBT: ${perf.tbt ?? "n/a"}ms  |  ${network.totalSizeKB} KB / ${network.totalRequests} reqs${VERBOSE ? `  ⏱ ${fmtSecs(runMs)}s` : ""}`);
           ok = true;
+          if (suspect) {
+            suspect = false;
+            targetRuns = NUM_RUNS;
+            console.log(`   ✓ Probe suspect cleared — completing all ${NUM_RUNS} runs`);
+          }
         } catch (e) {
-          console.warn(`     ✗ Lighthouse run failed: ${e.message}${attempt < RETRIES_PER_RUN ? " (retrying with a fresh Chrome)" : ""}`);
-          if (attempt < RETRIES_PER_RUN) {
+          const kind = classifyFailure(e);
+          TIMING.failedRunMs += performance.now() - attemptStart;
+          TIMING.failedRuns++;
+          if (kind === "degenerate") degenerates++;
+          maxAttempts = suspect ? 1 : (RETRIES_BY_CLASS[kind] ?? 2);
+          console.warn(`     ✗ Run failed (${kind}): ${e.message}`);
+          if (degenerates >= DEGENERATE_GIVE_UP) {
+            giveUpReason = `blocked: ${degenerates} degenerate LHRs (0 requests / no paint)`;
+            break;
+          }
+          if (attempts < maxAttempts) {
+            console.warn(`     ↻ retrying with a fresh Chrome (attempt ${attempts}/${maxAttempts})`);
             await closeBrowser();
           }
         }
       }
-      if (i < NUM_RUNS) {
+
+      if (i < targetRuns && !giveUpReason) {
         const sleepStart = performance.now();
         await new Promise((r) => setTimeout(r, 250));
         TIMING.sleepMs += performance.now() - sleepStart;
@@ -365,9 +491,16 @@ async function auditSite(site) {
   if (VERBOSE) console.log(`   ⏱ site total ${fmtSecs(performance.now() - siteStart)}s`);
 
   if (!perfTrials.length) {
-    console.warn(`   ⚠ No successful Lighthouse run for ${name} — not saving so it retries next time.`);
+    const probeReason = !probe.ok
+      ? (probe.kind === "connection" ? `unreachable (${probe.reason})` : `probe timeout (${probe.reason})`)
+      : null;
+    const reason = giveUpReason ?? probeReason ?? "no successful run";
+    console.warn(`   ⚠ No successful Lighthouse run for ${name} — not saving (${reason}).`);
+    recordFailure(site, reason);
     return null;
   }
+
+  clearFailure(url);
 
   const perfKeys = ["performanceScore", "lcp", "cls", "tbt", "fcp", "si", "tti"];
   const lighthouse_avg = {};
@@ -491,12 +624,17 @@ async function main() {
   });
 
   const resultsMap = loadExistingResults(OUT_FILE);
+  loadExistingFailures(OUT_FILE);
   const skipped    = Object.keys(resultsMap).length;
-  const initialTodo = sites.filter((s) => !resultsMap[s.url]);
+  const knownBad   = sites.filter((s) => !resultsMap[s.url] && isRecentlyUnreachable(s));
+  const initialTodo = sites.filter((s) => !resultsMap[s.url] && !isRecentlyUnreachable(s));
 
   console.log(`\n🔍 Botswana Web Performance Auditor (Lighthouse-only, resumable)`);
   console.log(`   Sites total:  ${sites.length}`);
   console.log(`   Already done: ${skipped}${skipped ? " (skipping)" : ""}`);
+  if (knownBad.length) {
+    console.log(`   Known bad:    ${knownBad.length} (unreachable in the last 7 days — skipped, use --force to retry)`);
+  }
   console.log(`   To audit:     ${initialTodo.length}`);
   console.log(`   Runs/site:    ${NUM_RUNS}`);
   console.log(`   Max passes:   ${MAX_PASSES}`);
@@ -504,15 +642,11 @@ async function main() {
 
   let pass = 0;
   while (!shutdownRequested) {
-    const todo = sites.filter((s) => !resultsMap[s.url]);
+    const todo = sites.filter((s) => !resultsMap[s.url] && !isRecentlyUnreachable(s));
     if (!todo.length) break;
 
     pass++;
-    if (pass > MAX_PASSES) {
-      const remaining = sites.filter((s) => !resultsMap[s.url]).map((s) => s.name);
-      console.warn(`\n⚠ ${remaining.length} site(s) still unsaved after ${MAX_PASSES} pass(es):\n   ${remaining.join(", ")}\n   Progress saved — re-run later to retry them.\n`);
-      break;
-    }
+    if (pass > MAX_PASSES) break;
     if (pass > 1) {
       console.log(`\n↻ Retry pass ${pass}/${MAX_PASSES}: ${todo.length} site(s) remaining… (waiting 30s for transient issues to clear)`);
       await new Promise((r) => setTimeout(r, 30000));
@@ -574,6 +708,16 @@ async function main() {
   const mins = Math.floor(elapsedSeconds / 60);
   const secs = +(elapsedSeconds % 60).toFixed(1);
 
+  const remaining = sites.filter((s) => !resultsMap[s.url]);
+  if (remaining.length) {
+    console.warn(`\n⚠ ${remaining.length} site(s) not saved:`);
+    for (const s of remaining) {
+      const f = failedSites.get(s.url);
+      console.warn(`   • ${s.name}${f ? ` — ${f.reason}` : ""}`);
+    }
+    console.warn(`   Re-run later to retry them (--force ignores the 7-day known-bad cache).\n`);
+  }
+
   printSummaryTable(sites.map((s) => resultsMap[s.url]).filter(Boolean));
   saveResults(OUT_FILE, sites, resultsMap);
   console.log(`\n✅ Audit complete in ${mins ? `${mins}m ` : ""}${secs}s. Results saved to ${OUT_FILE}`);
@@ -582,8 +726,9 @@ async function main() {
     console.log(`\n⏱  Timing breakdown`);
     console.log(`   Chrome launches: ${TIMING.chromeLaunches} in ${fmtSecs(TIMING.chromeLaunchMs)}s`);
     console.log(`   Lighthouse runs: ${TIMING.lighthouseRuns} in ${fmtSecs(TIMING.lighthouseMs)}s`);
+    console.log(`   Failed runs:     ${TIMING.failedRuns} in ${fmtSecs(TIMING.failedRunMs)}s`);
     console.log(`   Inter-run sleep: ${fmtSecs(TIMING.sleepMs)}s`);
-    console.log(`   Other/overhead:  ${fmtSecs(Math.max(0, (Date.now() - startedAt) - TIMING.chromeLaunchMs - TIMING.lighthouseMs - TIMING.sleepMs))}s`);
+    console.log(`   Other/overhead:  ${fmtSecs(Math.max(0, (Date.now() - startedAt) - TIMING.chromeLaunchMs - TIMING.lighthouseMs - TIMING.failedRunMs - TIMING.sleepMs))}s`);
     console.log(`   Wall clock:      ${fmtSecs(Date.now() - startedAt)}s\n`);
   }
 
